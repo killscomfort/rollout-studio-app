@@ -1,5 +1,5 @@
-import type { ProjectTemplate } from "../../shared/types.js";
-import fuckdahaters from "../../shared/seed/fuckdahaters.json" with { type: "json" };
+import type { ProjectTemplate } from "../../shared/types";
+import fuckdahaters from "../../shared/seed/fuckdahaters.json";
 
 export const BLANK_TEMPLATE: ProjectTemplate = {
   slug: "blank",

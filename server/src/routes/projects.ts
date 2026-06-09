@@ -1,6 +1,6 @@
 import { Router } from "express";
 import type { Database } from "better-sqlite3";
-import type { CreateProjectInput, ProjectTemplate, UpdateProjectInput } from "../../../shared/types.js";
+import type { CreateProjectInput, ProjectTemplate, UpdateProjectInput } from "../../../shared/types";
 import {
   createProjectFromTemplate,
   deleteProject,
@@ -9,8 +9,8 @@ import {
   replacePlan,
   setTaskCompleted,
   updateProject,
-} from "../db.js";
-import { TEMPLATES, listTemplates } from "../templates.js";
+} from "../db";
+import { TEMPLATES, listTemplates } from "../templates";
 
 export function createProjectRouter(db: Database) {
   const router = Router();

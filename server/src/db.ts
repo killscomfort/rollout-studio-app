@@ -1,7 +1,6 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { v4 as uuid } from "uuid";
 import type {
   CreateProjectInput,
@@ -15,11 +14,12 @@ import type {
   TaskCategory,
   UpdateProjectInput,
   Week,
-} from "../../shared/types.js";
-import { TEMPLATES } from "./templates.js";
+} from "../../shared/types";
+import { TEMPLATES } from "./templates";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.resolve(__dirname, "../../data");
+const dataDir =
+  process.env.ROLLOUT_DATA_DIR ??
+  path.resolve(process.cwd(), "data");
 const dbPath = path.join(dataDir, "rollout-studio.db");
 
 export function getDb() {

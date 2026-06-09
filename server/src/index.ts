@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
-import { createProjectRouter } from "./routes/projects.js";
-import { getDb, initDb } from "./db.js";
+import { createProjectRouter } from "./routes/projects";
+import { getDb, initDb } from "./db";
 
 const PORT = Number(process.env.ROLLOUT_PORT ?? 3847);
 

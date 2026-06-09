@@ -2,6 +2,7 @@ node_modules/
 dist/
 client/dist/
 server/dist/
+release/
 data/
 *.db
 .DS_Store
