@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { CreateProjectInput, ProjectSummary } from "../../../shared/types";
+import { SyncControls } from "../components/SyncControls";
 import { api } from "../api";
 
 interface ProjectListPageProps {
@@ -62,12 +63,14 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
         <div>
           <h1 className="page-title">Rollout Studio</h1>
           <p className="page-subtitle">
-            Standalone desktop rollout checklists — one workspace per release.
+            Rollout checklists for Mac and iPhone — one workspace per release.
           </p>
         </div>
       </div>
 
       {error ? <div className="callout">{error}</div> : null}
+
+      <SyncControls onSynced={() => void refresh()} />
 
       <div className="panel-card" style={{ marginBottom: 24 }}>
         <h2 className="section-title">Create project</h2>

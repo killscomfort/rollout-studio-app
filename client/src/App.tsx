@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
@@ -9,6 +10,9 @@ type View = "list" | "workspace" | "settings";
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
 
 function isWidgetMode() {
+  if (Capacitor.isNativePlatform()) {
+    return false;
+  }
   return window.location.hash === "#widget";
 }
 

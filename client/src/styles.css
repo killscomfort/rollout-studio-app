@@ -216,6 +216,22 @@ a {
   color: #eceff4;
 }
 
+.callout.success {
+  background: rgba(80, 200, 120, 0.08);
+  border-color: rgba(80, 200, 120, 0.18);
+  color: #9fe0b8;
+}
+
+.sync-panel {
+  margin-bottom: 24px;
+}
+
+.sync-copy {
+  margin-bottom: 16px;
+  color: #9aa3b2;
+  line-height: 1.55;
+}
+
 .timeline-list {
   display: flex;
   flex-direction: column;
@@ -545,4 +561,84 @@ body.widget-mode #root,
 
 .widget-open-full {
   width: 100%;
+}
+
+body.native-mobile {
+  background: #0f1115;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body.native-mobile .app-shell {
+  min-height: 100dvh;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+}
+
+body.native-mobile .page-header {
+  flex-direction: column;
+}
+
+body.native-mobile .stats-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  width: 100%;
+}
+
+body.native-mobile .layout-grid {
+  grid-template-columns: 1fr;
+}
+
+body.native-mobile .sidebar {
+  order: 2;
+}
+
+body.native-mobile .main-panel {
+  order: 1;
+}
+
+body.native-mobile .phase-nav {
+  flex-direction: row;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+body.native-mobile .phase-button {
+  min-width: 220px;
+}
+
+body.native-mobile .task-table-wrap {
+  margin: 0 -4px;
+}
+
+body.native-mobile .task-table {
+  min-width: 0;
+}
+
+body.native-mobile .button,
+body.native-mobile .pill {
+  min-height: 44px;
+}
+
+body.native-mobile .project-grid {
+  grid-template-columns: 1fr;
+}
+
+body.native-mobile .top-nav {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+    width: 100%;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
 }

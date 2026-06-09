@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import { createProjectRouter } from "./routes/projects";
+import { createSyncRouter } from "./routes/sync";
 import { getDb, initDb } from "./db";
 
 const PORT = Number(process.env.ROLLOUT_PORT ?? 3847);
@@ -18,6 +19,7 @@ export function createApp() {
   });
 
   app.use("/api/projects", createProjectRouter(db));
+  app.use("/api/sync", createSyncRouter(db));
 
   return { app, db, port: PORT };
 }

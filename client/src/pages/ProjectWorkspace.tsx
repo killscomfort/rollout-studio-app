@@ -29,6 +29,10 @@ export function ProjectWorkspace({
     setError(null);
     try {
       const next = await api.getProject(projectId);
+      if (!next) {
+        setError("Project not found");
+        return;
+      }
       setProject(next);
       setSelectedPhaseId((current) => current || next.phases[0]?.id || "");
     } catch (err) {

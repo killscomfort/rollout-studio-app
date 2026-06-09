@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import type { ProjectDetail, Task } from "../../../shared/types";
 import { CATEGORY_LABELS } from "../../../shared/types";
@@ -38,6 +39,7 @@ function pickTodayTasks(tasks: ReturnType<typeof flattenTasks>) {
 }
 
 export function WidgetPanel() {
+  const isNative = Capacitor.isNativePlatform();
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pinned, setPinned] = useState(true);
@@ -55,6 +57,10 @@ export function WidgetPanel() {
       const preferred =
         projects.find((item) => item.id === savedId) ?? projects[0];
       const detail = await api.getProject(preferred.id);
+      if (!detail) {
+        setProject(null);
+        return;
+      }
       localStorage.setItem(ACTIVE_PROJECT_KEY, detail.id);
       setProject(detail);
     } catch (err) {
@@ -101,14 +107,16 @@ export function WidgetPanel() {
           <div className="widget-title">{project?.name ?? "Rollout Studio"}</div>
         </div>
         <div className="widget-actions">
-          <button
-            type="button"
-            className="widget-icon-button"
-            title={pinned ? "Unpin widget" : "Pin widget"}
-            onClick={handlePinToggle}
-          >
-            {pinned ? "Pin" : "Float"}
-          </button>
+          {!isNative ? (
+            <button
+              type="button"
+              className="widget-icon-button"
+              title={pinned ? "Unpin widget" : "Pin widget"}
+              onClick={handlePinToggle}
+            >
+              {pinned ? "Pin" : "Float"}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -160,17 +168,19 @@ export function WidgetPanel() {
         </div>
       )}
 
-      <div className="widget-footer">
-        <button
-          type="button"
-          className="button primary widget-open-full"
-          onClick={() =>
-            window.rolloutStudio?.openMain(project?.id ?? undefined)
-          }
-        >
-          Open full app
-        </button>
-      </div>
+      {!isNative ? (
+        <div className="widget-footer">
+          <button
+            type="button"
+            className="button primary widget-open-full"
+            onClick={() =>
+              window.rolloutStudio?.openMain(project?.id ?? undefined)
+            }
+          >
+            Open full app
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

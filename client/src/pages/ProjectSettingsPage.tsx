@@ -33,6 +33,10 @@ export function ProjectSettingsPage({
           api.getProject(projectId),
           api.listTemplates(),
         ]);
+        if (!loaded) {
+          setError("Project not found");
+          return;
+        }
         setProject(loaded);
         setName(loaded.name);
         setTagline(loaded.tagline);

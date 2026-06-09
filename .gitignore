@@ -3,7 +3,10 @@ dist/
 client/dist/
 server/dist/
 release/
-data/
+/data/
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/
 *.db
 .DS_Store
 *.log
