@@ -171,12 +171,11 @@ export function RolloutDashboard({
           <div className="sidebar-card" style={{ marginTop: 16 }}>
             <h3 className="section-title">Timeline</h3>
             <div className="timeline-list">
-              <span>Wk 1 Foundation</span>
-              <span>Wk 2–3 Hook content</span>
-              <span>Wk 4 Demand</span>
-              <span>Wk 5 Pre-save</span>
-              <span>Wk 6 Release</span>
-              <span>Wk 7–8 Sustain</span>
+              {project.phases.flatMap((phase) =>
+                phase.weeks.map((week) => (
+                  <span key={week.id}>{week.label}</span>
+                ))
+              )}
             </div>
           </div>
         </aside>

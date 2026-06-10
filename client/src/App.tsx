@@ -30,7 +30,10 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || widgetMode) return;
+    if (!isSupabaseConfigured()) {
+      setSignedIn(true);
+      return;
+    }
 
     void getSession().then((session) => {
       setSignedIn(Boolean(session));
@@ -43,15 +46,15 @@ export default function App() {
       }
       setSignedIn(false);
     });
-  }, [widgetMode]);
+  }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !signedIn || widgetMode) return;
+    if (!isSupabaseConfigured() || !signedIn) return;
     return subscribeToCloudChanges(() => {
       setRefreshKey((value) => value + 1);
       setWorkspaceKey((value) => value + 1);
     });
-  }, [signedIn, widgetMode]);
+  }, [signedIn]);
 
   useEffect(() => {
     if (widgetMode) {
@@ -79,7 +82,7 @@ export default function App() {
 
   const content = useMemo(() => {
     if (widgetMode) {
-      return <WidgetPanel />;
+      return <WidgetPanel key={refreshKey} />;
     }
 
     if (view === "list") {
@@ -114,6 +117,11 @@ export default function App() {
           projectId={projectId}
           onBack={() => setView("workspace")}
           onSaved={() => setWorkspaceKey((value) => value + 1)}
+          onDeleted={() => {
+            localStorage.removeItem(ACTIVE_PROJECT_KEY);
+            setProjectId(null);
+            setView("list");
+          }}
         />
       );
     }
@@ -129,13 +137,45 @@ export default function App() {
         onOpenSettings={() => setView("settings")}
       />
     );
-  }, [projectId, view, workspaceKey, widgetMode]);
+  }, [projectId, view, workspaceKey, refreshKey, widgetMode]);
 
-  if (signedIn === null && !widgetMode) {
-    return <div className="empty-state">Loading account…</div>;
+  if (signedIn === null) {
+    return (
+      <div className={widgetMode ? "widget-root" : "app-shell"}>
+        <div className="empty-state">Loading account…</div>
+      </div>
+    );
   }
 
-  if (!signedIn && !widgetMode) {
+  if (!signedIn && isSupabaseConfigured()) {
+    if (widgetMode) {
+      return (
+        <div className="widget-root">
+          <div className="widget-shell">
+            <div className="widget-header">
+              <div className="widget-drag">
+                <div className="widget-kicker">Rollout widget</div>
+                <div className="widget-title">Sign in required</div>
+              </div>
+            </div>
+            <div className="widget-empty">
+              Sign in through the full app, then reopen the widget to sync your
+              checklist.
+            </div>
+            <div className="widget-footer">
+              <button
+                type="button"
+                className="button primary widget-open-full"
+                onClick={() => window.rolloutStudio?.openMain()}
+              >
+                Open full app
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return <AuthPage onSignedIn={() => setSignedIn(true)} />;
   }
 

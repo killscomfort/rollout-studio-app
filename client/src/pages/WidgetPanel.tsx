@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import type { ProjectDetail, Task } from "../../../shared/types";
 import { CATEGORY_LABELS } from "../../../shared/types";
-import { api } from "../api";
+import { api, isSupabaseConfigured, subscribeToCloudChanges } from "../api";
 
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -70,6 +70,13 @@ export function WidgetPanel() {
 
   useEffect(() => {
     void loadProject();
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    return subscribeToCloudChanges(() => {
+      void loadProject();
+    });
   }, []);
 
   const stats = useMemo(() => {

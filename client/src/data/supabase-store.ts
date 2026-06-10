@@ -610,9 +610,11 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string) {
-  const { error } = await getSupabase().auth.signUp({ email, password });
+  const { data, error } = await getSupabase().auth.signUp({ email, password });
   if (error) throw new Error(error.message);
-  await initSupabaseStore();
+  if (data.session) {
+    await initSupabaseStore();
+  }
 }
 
 export async function signOut() {

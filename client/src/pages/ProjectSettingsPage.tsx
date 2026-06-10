@@ -6,12 +6,14 @@ interface ProjectSettingsPageProps {
   projectId: string;
   onBack: () => void;
   onSaved: () => void;
+  onDeleted: () => void;
 }
 
 export function ProjectSettingsPage({
   projectId,
   onBack,
   onSaved,
+  onDeleted,
 }: ProjectSettingsPageProps) {
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [name, setName] = useState("");
@@ -126,7 +128,7 @@ export function ProjectSettingsPage({
       return;
     }
     await api.deleteProject(projectId);
-    onBack();
+    onDeleted();
   }
 
   if (!project) {
