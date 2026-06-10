@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import type { CreateProjectInput, ProjectSummary } from "../../../shared/types";
 import { SyncControls } from "../components/SyncControls";
+import { OpenWidgetButton } from "../components/OpenWidgetButton";
+import { AccountControls } from "../components/AccountControls";
+import { isSupabaseConfigured } from "../api";
 import { api } from "../api";
 
 interface ProjectListPageProps {
@@ -65,6 +68,10 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
           <p className="page-subtitle">
             Rollout checklists for Mac and iPhone — one workspace per release.
           </p>
+        </div>
+        <div className="page-header-actions">
+          {isSupabaseConfigured() ? <AccountControls /> : null}
+          <OpenWidgetButton />
         </div>
       </div>
 

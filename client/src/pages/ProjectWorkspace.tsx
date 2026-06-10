@@ -5,6 +5,7 @@ import {
   RolloutDashboard,
   type CategoryFilter,
 } from "../components/RolloutDashboard";
+import { OpenWidgetButton } from "../components/OpenWidgetButton";
 
 interface ProjectWorkspaceProps {
   projectId: string;
@@ -81,6 +82,7 @@ export function ProjectWorkspace({
         <button type="button" className="button" onClick={onOpenSettings}>
           Project settings
         </button>
+        <OpenWidgetButton />
       </div>
 
       <RolloutDashboard

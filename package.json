@@ -61,6 +61,7 @@
     "express": "^4.21.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "@supabase/supabase-js": "^2.49.8",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

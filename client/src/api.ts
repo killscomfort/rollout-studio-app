@@ -7,11 +7,20 @@ import type {
   UpdateProjectInput,
 } from "../../shared/types";
 import type { SyncBundle, SyncImportResult } from "../../shared/sync";
+import { isSupabaseConfigured } from "./lib/config";
 import * as localDb from "./data/native-store";
+import * as cloudDb from "./data/supabase-store";
 import { listTemplates as listLocalTemplates } from "./data/templates";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
-const useLocalData = () => Capacitor.isNativePlatform();
+
+function useCloudData() {
+  return isSupabaseConfigured();
+}
+
+function useLocalNativeData() {
+  return Capacitor.isNativePlatform() && !useCloudData();
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
@@ -36,75 +45,107 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   listProjects: () =>
-    useLocalData()
-      ? localDb.listProjects()
-      : request<ProjectSummary[]>("/api/projects"),
+    useCloudData()
+      ? cloudDb.listProjects()
+      : useLocalNativeData()
+        ? localDb.listProjects()
+        : request<ProjectSummary[]>("/api/projects"),
   getProject: (id: string) =>
-    useLocalData()
-      ? localDb.getProject(id)
-      : request<ProjectDetail>(`/api/projects/${id}`),
+    useCloudData()
+      ? cloudDb.getProject(id)
+      : useLocalNativeData()
+        ? localDb.getProject(id)
+        : request<ProjectDetail>(`/api/projects/${id}`),
   createProject: (input: CreateProjectInput) =>
-    useLocalData()
-      ? localDb.createProjectFromTemplate(input)
-      : request<ProjectDetail>("/api/projects", {
-          method: "POST",
-          body: JSON.stringify(input),
-        }),
+    useCloudData()
+      ? cloudDb.createProjectFromTemplate(input)
+      : useLocalNativeData()
+        ? localDb.createProjectFromTemplate(input)
+        : request<ProjectDetail>("/api/projects", {
+            method: "POST",
+            body: JSON.stringify(input),
+          }),
   updateProject: (id: string, input: UpdateProjectInput) =>
-    useLocalData()
-      ? localDb.updateProject(id, input)
-      : request<ProjectDetail>(`/api/projects/${id}`, {
-          method: "PATCH",
-          body: JSON.stringify(input),
-        }),
+    useCloudData()
+      ? cloudDb.updateProject(id, input)
+      : useLocalNativeData()
+        ? localDb.updateProject(id, input)
+        : request<ProjectDetail>(`/api/projects/${id}`, {
+            method: "PATCH",
+            body: JSON.stringify(input),
+          }),
   deleteProject: (id: string) =>
-    useLocalData()
-      ? localDb.deleteProject(id).then(() => undefined)
-      : request<void>(`/api/projects/${id}`, { method: "DELETE" }),
+    useCloudData()
+      ? cloudDb.deleteProject(id).then(() => undefined)
+      : useLocalNativeData()
+        ? localDb.deleteProject(id).then(() => undefined)
+        : request<void>(`/api/projects/${id}`, { method: "DELETE" }),
   setTaskCompleted: (projectId: string, taskId: string, completed: boolean) =>
-    useLocalData()
-      ? localDb.setTaskCompleted(projectId, taskId, completed).then(async () => {
-          const project = await localDb.getProject(projectId);
-          if (!project) {
-            throw new Error("Project not found");
-          }
+    useCloudData()
+      ? cloudDb.setTaskCompleted(projectId, taskId, completed).then(async () => {
+          const project = await cloudDb.getProject(projectId);
+          if (!project) throw new Error("Project not found");
           return project;
         })
-      : request<ProjectDetail>(`/api/projects/${projectId}/tasks/${taskId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ completed }),
-        }),
+      : useLocalNativeData()
+        ? localDb.setTaskCompleted(projectId, taskId, completed).then(async () => {
+            const project = await localDb.getProject(projectId);
+            if (!project) throw new Error("Project not found");
+            return project;
+          })
+        : request<ProjectDetail>(`/api/projects/${projectId}/tasks/${taskId}`, {
+            method: "PATCH",
+            body: JSON.stringify({ completed }),
+          }),
   replacePlan: (projectId: string, template: ProjectTemplate) =>
-    useLocalData()
-      ? localDb.replacePlan(projectId, template)
-      : request<ProjectDetail>(`/api/projects/${projectId}/plan`, {
-          method: "PUT",
-          body: JSON.stringify(template),
-        }),
+    useCloudData()
+      ? cloudDb.replacePlan(projectId, template)
+      : useLocalNativeData()
+        ? localDb.replacePlan(projectId, template)
+        : request<ProjectDetail>(`/api/projects/${projectId}/plan`, {
+            method: "PUT",
+            body: JSON.stringify(template),
+          }),
   resetPlan: (projectId: string, templateSlug: string) =>
-    useLocalData()
-      ? localDb.resetPlan(projectId, templateSlug)
-      : request<ProjectDetail>(`/api/projects/${projectId}/plan/reset`, {
-          method: "POST",
-          body: JSON.stringify({ templateSlug }),
-        }),
+    useCloudData()
+      ? cloudDb.resetPlan(projectId, templateSlug)
+      : useLocalNativeData()
+        ? localDb.resetPlan(projectId, templateSlug)
+        : request<ProjectDetail>(`/api/projects/${projectId}/plan/reset`, {
+            method: "POST",
+            body: JSON.stringify({ templateSlug }),
+          }),
   listTemplates: () =>
-    useLocalData()
+    useCloudData() || useLocalNativeData()
       ? Promise.resolve(listLocalTemplates())
       : request<Array<{ slug: string; name: string; tagline: string }>>(
           "/api/projects/templates"
         ),
   exportSync: (): Promise<SyncBundle> =>
-    useLocalData()
-      ? localDb.exportSyncBundle()
-      : request<SyncBundle>("/api/sync/export"),
+    useCloudData()
+      ? cloudDb.exportSyncBundle()
+      : useLocalNativeData()
+        ? localDb.exportSyncBundle()
+        : request<SyncBundle>("/api/sync/export"),
   importSync: (bundle: SyncBundle): Promise<SyncImportResult> =>
-    useLocalData()
-      ? localDb.importSyncBundle(bundle)
-      : request<SyncImportResult>("/api/sync/import", {
-          method: "POST",
-          body: JSON.stringify(bundle),
-        }),
+    useCloudData()
+      ? cloudDb.importSyncBundle(bundle)
+      : useLocalNativeData()
+        ? localDb.importSyncBundle(bundle)
+        : request<SyncImportResult>("/api/sync/import", {
+            method: "POST",
+            body: JSON.stringify(bundle),
+          }),
 };
 
-export { initLocalDatabase } from "./data/native-store";
+export async function initAppData() {
+  if (useCloudData()) {
+    return cloudDb.initSupabaseStore();
+  }
+  if (useLocalNativeData()) {
+    return localDb.initLocalDatabase();
+  }
+}
+
+export { isSupabaseConfigured } from "./lib/config";
+export { onAuthStateChange } from "./data/supabase-store";

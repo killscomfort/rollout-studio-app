@@ -1,5 +1,8 @@
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
+import { initAppData, isSupabaseConfigured, onAuthStateChange } from "./api";
+import { getSession } from "./lib/supabase";
+import { AuthPage } from "./pages/AuthPage";
 import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ProjectWorkspace } from "./pages/ProjectWorkspace";
@@ -18,9 +21,28 @@ function isWidgetMode() {
 
 export default function App() {
   const widgetMode = isWidgetMode();
+  const [signedIn, setSignedIn] = useState<boolean | null>(
+    isSupabaseConfigured() ? null : true
+  );
   const [view, setView] = useState<View>("list");
   const [projectId, setProjectId] = useState<string | null>(null);
   const [workspaceKey, setWorkspaceKey] = useState(0);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured() || widgetMode) return;
+
+    void getSession().then((session) => {
+      setSignedIn(Boolean(session));
+    });
+
+    return onAuthStateChange((next) => {
+      if (next) {
+        void initAppData().finally(() => setSignedIn(true));
+        return;
+      }
+      setSignedIn(false);
+    });
+  }, [widgetMode]);
 
   useEffect(() => {
     if (widgetMode) {
@@ -97,6 +119,14 @@ export default function App() {
       />
     );
   }, [projectId, view, workspaceKey, widgetMode]);
+
+  if (signedIn === null && !widgetMode) {
+    return <div className="empty-state">Loading account…</div>;
+  }
+
+  if (!signedIn && !widgetMode) {
+    return <AuthPage onSignedIn={() => setSignedIn(true)} />;
+  }
 
   return (
     <div className={widgetMode ? "widget-root" : "app-shell"}>{content}</div>

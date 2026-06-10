@@ -232,6 +232,36 @@ a {
   line-height: 1.55;
 }
 
+.auth-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.auth-card {
+  width: min(100%, 480px);
+}
+
+.page-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.account-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.account-email {
+  font-size: 13px;
+  color: #9aa3b2;
+}
+
 .timeline-list {
   display: flex;
   flex-direction: column;

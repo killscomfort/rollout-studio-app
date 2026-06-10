@@ -1,6 +1,6 @@
 # Rollout Studio
 
-Standalone rollout checklist app — desktop (macOS) and iPhone.
+Standalone rollout checklist app — desktop (macOS), iPhone, and optional Supabase cloud sync.
 
 ## Desktop (macOS)
 
@@ -11,6 +11,43 @@ npm install
 npm rebuild better-sqlite3
 npm start
 ```
+
+## Supabase cloud sync (recommended)
+
+Without Supabase, data stays on each device. With Supabase, Mac and iPhone stay in sync automatically after sign-in.
+
+### 1. Create a Supabase project
+
+1. Go to [supabase.com](https://supabase.com) and create a project
+2. Open **SQL Editor** and run the migration in `supabase/migrations/001_rollout_studio.sql`
+3. Copy **Project URL** and **anon public key** from **Settings → API**
+
+### 2. Configure the app
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Rebuild and run:
+
+```bash
+npm run dev
+# or
+npm start
+```
+
+Sign in (or create an account) when the app opens. The same account works on Mac and iPhone.
+
+### Auth settings
+
+In Supabase **Authentication → Providers**, enable **Email**. You can disable email confirmation for personal use under **Auth → Email** if you want instant sign-up.
 
 ## iPhone (iOS)
 

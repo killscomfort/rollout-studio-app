@@ -10,3 +10,5 @@ ios/DerivedData/
 *.db
 .DS_Store
 *.log
+.env
+.env.local

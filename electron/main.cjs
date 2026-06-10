@@ -7,6 +7,7 @@ const API_PORT = process.env.ROLLOUT_PORT || "3847";
 let widgetWindow = null;
 let mainWindow = null;
 let tray = null;
+let appIsQuitting = false;
 
 if (isPackaged && process.platform === "darwin") {
   app.disableHardwareAcceleration();
@@ -47,9 +48,22 @@ function waitForBackend() {
   });
 }
 
-function startBackend() {
+async function backendAlreadyRunning() {
+  try {
+    const response = await fetch(`http://127.0.0.1:${API_PORT}/health`);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function startBackend() {
   if (useViteDevServer) {
-    return Promise.resolve();
+    return waitForBackend();
+  }
+
+  if (await backendAlreadyRunning()) {
+    return;
   }
 
   process.env.ROLLOUT_DATA_DIR = app.getPath("userData");
@@ -58,6 +72,9 @@ function startBackend() {
   try {
     require(getServerEntry());
   } catch (error) {
+    if (await backendAlreadyRunning()) {
+      return;
+    }
     return Promise.reject(error);
   }
 
@@ -69,12 +86,18 @@ function attachExternalLinks(win) {
     shell.openExternal(url);
     return { action: "deny" };
   });
+
+  win.webContents.on("render-process-gone", (_event, details) => {
+    console.error("Renderer crashed:", details.reason);
+  });
 }
 
 function loadWindowContent(win, hash = "") {
   if (useViteDevServer) {
-    const suffix = hash ? `#${hash}` : "";
-    win.loadURL(`http://127.0.0.1:5173/${suffix}`);
+    const url = hash
+      ? `http://127.0.0.1:5173/#${hash}`
+      : "http://127.0.0.1:5173/";
+    win.loadURL(url);
     return;
   }
 
@@ -113,6 +136,13 @@ function createWidgetWindow() {
 
   widgetWindow.once("ready-to-show", () => {
     widgetWindow.show();
+  });
+
+  widgetWindow.on("close", (event) => {
+    if (!appIsQuitting) {
+      event.preventDefault();
+      widgetWindow.hide();
+    }
   });
 
   loadWindowContent(widgetWindow, "widget");
@@ -161,15 +191,30 @@ function createMainWindow(projectId) {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+    if (!appIsQuitting && widgetWindow) {
+      widgetWindow.show();
+    }
   });
 
   return mainWindow;
 }
 
-function createTray() {
-  const icon = nativeImage.createFromDataURL(
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+function createTrayIcon() {
+  const size = 16;
+  const canvas = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 16 16">
+      <rect width="16" height="16" rx="4" fill="#5b8cff"/>
+      <path d="M4 5h8v1.5H4V5zm0 3h8v1.5H4V8zm0 3h5v1.5H4V11z" fill="#ffffff"/>
+    </svg>
+  `;
+
+  return nativeImage.createFromDataURL(
+    `data:image/svg+xml;base64,${Buffer.from(canvas).toString("base64")}`
   );
+}
+
+function createTray() {
+  const icon = createTrayIcon();
   tray = new Tray(icon);
   tray.setToolTip("Rollout Studio");
 
@@ -185,17 +230,20 @@ function createTray() {
     { type: "separator" },
     {
       label: "Quit",
-      click: () => app.quit(),
+      click: () => {
+        appIsQuitting = true;
+        app.quit();
+      },
     },
   ]);
 
   tray.setContextMenu(menu);
   tray.on("click", () => {
-    if (widgetWindow) {
-      widgetWindow.isVisible() ? widgetWindow.hide() : widgetWindow.show();
-    } else {
-      createWidgetWindow();
+    if (widgetWindow?.isVisible()) {
+      widgetWindow.hide();
+      return;
     }
+    createWidgetWindow();
   });
 }
 
@@ -206,6 +254,10 @@ function registerIpc() {
     createMainWindow(projectId);
   });
 
+  ipcMain.handle("open-widget", () => {
+    createWidgetWindow();
+  });
+
   ipcMain.handle("toggle-always-on-top", () => {
     if (!widgetWindow) return false;
     const next = !widgetWindow.isAlwaysOnTop();
@@ -214,9 +266,27 @@ function registerIpc() {
   });
 
   ipcMain.handle("quit-app", () => {
+    appIsQuitting = true;
     app.quit();
   });
 }
+
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    createWidgetWindow();
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+}
+
+app.on("before-quit", () => {
+  appIsQuitting = true;
+});
 
 app.whenReady().then(async () => {
   registerIpc();
@@ -231,14 +301,10 @@ app.whenReady().then(async () => {
   createWidgetWindow();
 
   app.on("activate", () => {
-    if (!widgetWindow && !mainWindow) {
-      createWidgetWindow();
-    }
+    createWidgetWindow();
   });
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  // Keep running in the menu bar tray on macOS.
 });

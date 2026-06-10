@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { SyncBundle } from "../../../shared/sync";
 import { validateSyncBundle } from "../../../shared/sync";
-import { api } from "../api";
+import { api, isSupabaseConfigured } from "../api";
 
 interface SyncControlsProps {
   onSynced: () => void;
@@ -34,6 +34,18 @@ export function SyncControls({ onSynced }: SyncControlsProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  if (isSupabaseConfigured()) {
+    return (
+      <div className="panel-card sync-panel">
+        <h2 className="section-title">Cloud sync</h2>
+        <p className="sync-copy">
+          Supabase is connected. Projects and checked tasks sync automatically
+          across your Mac, iPhone, and any signed-in device.
+        </p>
+      </div>
+    );
+  }
 
   async function handleExport() {
     setBusy(true);
