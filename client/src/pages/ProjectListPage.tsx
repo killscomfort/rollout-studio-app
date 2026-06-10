@@ -18,7 +18,7 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [templateSlug, setTemplateSlug] = useState("fuckdahaters");
+  const [templateSlug, setTemplateSlug] = useState("blank");
 
   async function refresh() {
     setLoading(true);

@@ -1,12 +1,14 @@
 # Rollout Studio
 
-Standalone rollout checklist app — desktop (macOS), iPhone, and optional Supabase cloud sync.
+Standalone rollout checklist app for music releases — Mac desktop, iPhone, and optional Supabase cloud sync.
+
+Rollout Studio is its own product. Customize projects, templates, and branding for any artist or release.
 
 ## Desktop (macOS)
 
 ```bash
-git clone https://github.com/killscomfort/rollout-studio.git
-cd rollout-studio
+git clone https://github.com/killscomfort/rollout-studio-app.git
+cd rollout-studio-app
 npm install
 npm rebuild better-sqlite3
 npm start
@@ -51,7 +53,7 @@ In Supabase **Authentication → Providers**, enable **Email**. You can disable 
 
 ## iPhone (iOS)
 
-Rollout Studio runs on iPhone as a native Capacitor app. Data is stored on-device (no server required on phone).
+Rollout Studio runs on iPhone as a native Capacitor app. Data is stored on-device unless Supabase is configured.
 
 ### Requirements
 
@@ -61,7 +63,7 @@ Rollout Studio runs on iPhone as a native Capacitor app. Data is stored on-devic
 ### Build and run on simulator or device
 
 ```bash
-cd rollout-studio
+cd rollout-studio-app
 npm install
 npm run build:ios
 npm run open:ios
@@ -83,11 +85,13 @@ After changing the web UI, run `npm run build:ios` again before rebuilding in Xc
 
 ### Sync Mac and iPhone
 
-1. On one device, open Rollout Studio and tap **Export sync file**
+With **Supabase** configured, sync is automatic after sign-in.
+
+Without Supabase:
+
+1. On one device, tap **Export sync file**
 2. AirDrop, email, or save the JSON file
 3. On the other device, tap **Import sync file** and choose that file
-
-Newer project edits win when the same project exists on both devices. Checked tasks merge when both copies are present.
 
 ## Development
 
@@ -98,8 +102,13 @@ Newer project edits win when the same project exists on both devices. Checked ta
 | `npm run build:ios` | Build web bundle and sync to `ios/` |
 | `npm run open:ios` | Open Xcode project |
 
+## Templates
+
+- **New Rollout** — blank starter project
+- **Single Release Rollout** — generic 8-week release checklist with placeholder copy you can edit in project settings
+
 ## Share with others
 
-- **Code:** https://github.com/killscomfort/rollout-studio
+- **Code:** https://github.com/killscomfort/rollout-studio-app
 - **Desktop:** Share the repo; peers run `npm start` on macOS
 - **iPhone:** Share the repo; peers need Xcode to build and install on their devices

@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.killscomfort.rolloutstudio",
+  appId: "com.rolloutstudio.app",
   appName: "Rollout Studio",
   webDir: "client/dist",
   ios: {

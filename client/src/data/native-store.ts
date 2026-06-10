@@ -11,7 +11,7 @@ import type {
   UpdateProjectInput,
   Week,
 } from "../../../shared/types";
-import { TEMPLATES } from "./templates";
+import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
 import {
   createSyncBundle,
   mergeSyncData,
@@ -117,12 +117,12 @@ async function initDb() {
   db = loadDb();
   if (db.projects.length === 0) {
     await createProjectFromTemplate({
-      name: TEMPLATES.fuckdahaters.name,
-      slug: TEMPLATES.fuckdahaters.slug,
-      tagline: TEMPLATES.fuckdahaters.tagline,
-      bookingUrl: TEMPLATES.fuckdahaters.bookingUrl,
-      funnelNote: TEMPLATES.fuckdahaters.funnelNote,
-      templateSlug: "fuckdahaters",
+      name: BLANK_TEMPLATE.name,
+      slug: BLANK_TEMPLATE.slug,
+      tagline: BLANK_TEMPLATE.tagline,
+      bookingUrl: BLANK_TEMPLATE.bookingUrl,
+      funnelNote: BLANK_TEMPLATE.funnelNote,
+      templateSlug: "blank",
     });
   }
 }

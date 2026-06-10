@@ -15,7 +15,7 @@ import type {
   UpdateProjectInput,
   Week,
 } from "../../shared/types";
-import { TEMPLATES } from "./templates";
+import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
 
 const dataDir =
   process.env.ROLLOUT_DATA_DIR ??
@@ -80,12 +80,12 @@ export function initDb(db: Database.Database) {
   const count = db.prepare("SELECT COUNT(*) AS c FROM projects").get() as { c: number };
   if (count.c === 0) {
     createProjectFromTemplate(db, {
-      name: TEMPLATES.fuckdahaters.name,
-      slug: TEMPLATES.fuckdahaters.slug,
-      tagline: TEMPLATES.fuckdahaters.tagline,
-      bookingUrl: TEMPLATES.fuckdahaters.bookingUrl,
-      funnelNote: TEMPLATES.fuckdahaters.funnelNote,
-      templateSlug: "fuckdahaters",
+      name: BLANK_TEMPLATE.name,
+      slug: BLANK_TEMPLATE.slug,
+      tagline: BLANK_TEMPLATE.tagline,
+      bookingUrl: BLANK_TEMPLATE.bookingUrl,
+      funnelNote: BLANK_TEMPLATE.funnelNote,
+      templateSlug: "blank",
     });
   }
 }

@@ -1,5 +1,5 @@
 import type { ProjectTemplate } from "../../shared/types";
-import fuckdahaters from "../../shared/seed/fuckdahaters.json";
+import singleRelease from "../../shared/seed/single-release.json";
 
 export const BLANK_TEMPLATE: ProjectTemplate = {
   slug: "blank",
@@ -40,7 +40,7 @@ export const BLANK_TEMPLATE: ProjectTemplate = {
 
 export const TEMPLATES: Record<string, ProjectTemplate> = {
   blank: BLANK_TEMPLATE,
-  fuckdahaters: fuckdahaters as ProjectTemplate,
+  "single-release": singleRelease as ProjectTemplate,
 };
 
 export function listTemplates() {

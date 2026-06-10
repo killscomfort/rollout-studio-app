@@ -19,7 +19,7 @@ import {
   validateSyncBundle,
 } from "../../../shared/sync";
 import { getSupabase, requireUserId } from "../lib/supabase";
-import { TEMPLATES } from "./templates";
+import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
 
 interface ProjectRow {
   id: string;
@@ -314,12 +314,12 @@ export async function initSupabaseStore() {
   if (error) throw new Error(error.message);
   if ((count ?? 0) === 0) {
     await createProjectFromTemplate({
-      name: TEMPLATES.fuckdahaters.name,
-      slug: TEMPLATES.fuckdahaters.slug,
-      tagline: TEMPLATES.fuckdahaters.tagline,
-      bookingUrl: TEMPLATES.fuckdahaters.bookingUrl,
-      funnelNote: TEMPLATES.fuckdahaters.funnelNote,
-      templateSlug: "fuckdahaters",
+      name: BLANK_TEMPLATE.name,
+      slug: BLANK_TEMPLATE.slug,
+      tagline: BLANK_TEMPLATE.tagline,
+      bookingUrl: BLANK_TEMPLATE.bookingUrl,
+      funnelNote: BLANK_TEMPLATE.funnelNote,
+      templateSlug: "blank",
     });
   }
 }

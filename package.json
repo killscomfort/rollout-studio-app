@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Standalone desktop rollout checklist — customizable per project",
+  "description": "Standalone rollout checklist app for music releases — Mac, iPhone, and cloud sync",
   "main": "electron/main.cjs",
   "scripts": {
     "dev": "concurrently -k \"npm:dev:server\" \"npm:dev:client\" \"npm:dev:electron\"",
@@ -22,7 +22,7 @@
     "typecheck": "tsc -p server/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit"
   },
   "build": {
-    "appId": "com.killscomfort.rollout-studio",
+    "appId": "com.rolloutstudio.app",
     "productName": "Rollout Studio",
     "directories": {
       "output": "release"

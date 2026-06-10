@@ -1,0 +1,382 @@
+{
+  "slug": "single-release",
+  "name": "Single Release Rollout",
+  "tagline": "8-week release schedule",
+  "bookingUrl": "https://your-link.com",
+  "funnelNote": "Social discovery → streams → landing page → conversion. Every post supports listens and your call to action.",
+  "phases": [
+    {
+      "title": "Lock in the foundation",
+      "color": "blue",
+      "weeks": [
+        {
+          "label": "Week 1",
+          "subtitle": "Distribution, assets, and funnel wiring",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "admin",
+              "task": "Pick your release date — a Friday, 5 weeks out. Write it everywhere. This is now your countdown anchor."
+            },
+            {
+              "day": "Mon",
+              "category": "distribute",
+              "task": "Upload 'Your Track Title' to DistroKid. Final master, artwork (3000×3000), metadata. Set the release date. Use your-link.com as your artist website URL."
+            },
+            {
+              "day": "Tue",
+              "category": "distribute",
+              "task": "Open Spotify for Artists and pitch 'Your Track Title' using the upcoming release tool. Describe the mood, BPM, subgenre, and that you're a performing DJ in the your city scene. This must happen 3–4 weeks before release."
+            },
+            {
+              "day": "Tue",
+              "category": "setup",
+              "task": "Update your Spotify for Artists bio to mention DJ bookings and link to your-link.com. Update your profile photo if it's outdated."
+            },
+            {
+              "day": "Wed",
+              "category": "setup",
+              "task": "Create your HyperFollow pre-save page for 'Your Track Title'. Customize it — add your booking site link. Test it on mobile."
+            },
+            {
+              "day": "Wed",
+              "category": "setup",
+              "task": "Update Instagram bio: 'your artist name · DJ · your city · New track [date] · Book me' — link goes to your-link.com (NOT the homepage)."
+            },
+            {
+              "day": "Thu",
+              "category": "setup",
+              "task": "Update TikTok bio the same way. If you don't have TikTok yet, create @your artist name now. Bio links to booking. This is your #1 discovery platform."
+            },
+            {
+              "day": "Thu",
+              "category": "distribute",
+              "task": "Upload a 60-second preview of 'Your Track Title' to SoundCloud. Description includes booking link and 'available for DJ sets in your city and beyond.'"
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "FILM DAY. Record 6–8 short clips: DAW screen recordings of the drop, you vibing to the track on monitors, a reaction shot, the track in car speakers. Raw material for 3 weeks of content."
+            },
+            {
+              "day": "Sat",
+              "category": "engage",
+              "task": "Join or re-engage in 2–3 communities: r/EDM, a your city music Discord, a local DJ Facebook group. Comment on 10 posts. No promo — just be present."
+            },
+            {
+              "day": "Sun",
+              "category": "admin",
+              "task": "Map out your content calendar for weeks 2–5. Batch-edit 3–4 video clips so they're ready to post Monday. Pre-write captions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Hook content — 'Your Track Title' energy",
+      "color": "purple",
+      "weeks": [
+        {
+          "label": "Week 2",
+          "subtitle": "The track name IS the content — lean into the attitude",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "content",
+              "task": "TikTok/Reel #1: 10-sec DAW screen recording of the hardest drop. Caption: 'made a track called Your Track Title. should I drop it or keep it for sets?'"
+            },
+            {
+              "day": "Tue",
+              "category": "engage",
+              "task": "30-min engagement session: comment genuinely on 15+ posts from your city venues, EDM creators, and local promoters. Get seen by their audiences. Don't self-promote."
+            },
+            {
+              "day": "Wed",
+              "category": "content",
+              "task": "TikTok/Reel #2: 'POV: the track you made after someone said you'd never make it' — play 'Your Track Title' over a moody studio shot or your city night visual."
+            },
+            {
+              "day": "Thu",
+              "category": "engage",
+              "task": "Reply to every comment from posts #1 and #2. Follow back anyone who engages. Spend 15 min in communities. DM anyone who says something like 'drop this.'"
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "TikTok/Reel #3: the track playing through car speakers cruising your city. 8–12 seconds, loop-friendly. Caption: 'miami nights + unreleased heat · booking link in bio.'"
+            },
+            {
+              "day": "Sat",
+              "category": "engage",
+              "task": "Attend a local event, even a small one. Post a story of the crowd/venue, tag the venue and DJ. Build your local network IRL — this is where bookings come from."
+            },
+            {
+              "day": "Sun",
+              "category": "admin",
+              "task": "Analytics review: which post got the most views, saves, and shares? What time performed best? Check your-link.com for social traffic. Adjust Week 3 plan."
+            }
+          ]
+        },
+        {
+          "label": "Week 3",
+          "subtitle": "Position yourself as a DJ who books, not just a producer who posts",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "content",
+              "task": "TikTok/Reel #4: production timelapse of 'Your Track Title' session condensed to 15 sec. End text: 'drops [date] · book me → link in bio.'"
+            },
+            {
+              "day": "Tue",
+              "category": "engage",
+              "task": "DM 5 your city venues, bars, or event promoters. Intro only: 'Hey, I'm your artist name, I DJ and produce locally. Got a track dropping soon. Love what you do at [venue]. Would love to connect.'"
+            },
+            {
+              "day": "Wed",
+              "category": "content",
+              "task": "TikTok/Reel #5: use your past event photos. Slow pan across 3–4 event shots set to 'Your Track Title' with text: 'this is what a your artist name set looks like.' CTA to booking page."
+            },
+            {
+              "day": "Thu",
+              "category": "playlist",
+              "task": "Build your playlist submission list: search Spotify for 30–50 playlists in your subgenre (500–10K followers). Save curator names/IG handles in a spreadsheet."
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "Instagram Story series: the story behind 'Your Track Title.' What inspired the name, the energy, the moment. End slide: 'hear it live → your-link.com.'"
+            },
+            {
+              "day": "Sat",
+              "category": "engage",
+              "task": "Give production feedback in a community. Share a tip or technique. Build goodwill so when you share your track next week, people care."
+            },
+            {
+              "day": "Sun",
+              "category": "admin",
+              "task": "Write your playlist pitch: track name, genre, one-line hook, 2 comparison artists, private link. Save it — you'll use this 50+ times."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Build demand — outreach and urgency",
+      "color": "yellow",
+      "weeks": [
+        {
+          "label": "Week 4",
+          "subtitle": "Playlist blitz + content that drives to your-link.com",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "content",
+              "task": "TikTok/Reel #6: release date reveal. Text overlay with the drop playing: '[DATE]. Your Track Title.' Caption drives to pre-save link."
+            },
+            {
+              "day": "Mon",
+              "category": "playlist",
+              "task": "Submit 'Your Track Title' to 15 playlists via SubmitHub or direct DM. Use your pitch template. Focus on playlists with 500–10K followers."
+            },
+            {
+              "day": "Tue",
+              "category": "playlist",
+              "task": "Submit to 15 more playlists. Also submit to 3–5 SoundCloud repost channels. Aim for 50 total submissions by end of week."
+            },
+            {
+              "day": "Wed",
+              "category": "content",
+              "task": "TikTok/Reel #7: 'rate my unreleased track 1–10' — play 'Your Track Title' through studio monitors or your DJ controller. Showing gear = showing you're bookable."
+            },
+            {
+              "day": "Thu",
+              "category": "engage",
+              "task": "Engagement blitz: 30 min across TikTok + Instagram. Reply to every comment. DM anyone who shared. Drop genuine comments on 15+ posts."
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "Instagram carousel: 'The making of Your Track Title' — 4 slides: inspiration, production, what the name means, final artwork. Last slide: booking CTA."
+            },
+            {
+              "day": "Sat",
+              "category": "playlist",
+              "task": "Follow up on unresponded playlist submissions. Send remaining submissions to hit 50 total. Track which curators responded positively."
+            },
+            {
+              "day": "Sun",
+              "category": "admin",
+              "task": "Mid-campaign check: Spotify for Artists visibility, pre-save numbers, booking site traffic, follower growth. What's working? Double down."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pre-save push — convert to listeners and site visitors",
+      "color": "green",
+      "weeks": [
+        {
+          "label": "Week 5",
+          "subtitle": "Every post drives to pre-save AND your-link.com",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "content",
+              "task": "TikTok/Reel #8: countdown — '5 DAYS. Your Track Title.' Catchiest 8 seconds. Caption: 'pre-save in bio. also booking events — your city and beyond.'"
+            },
+            {
+              "day": "Mon",
+              "category": "setup",
+              "task": "Pin a post to your IG grid that's a permanent booking CTA: you DJing + text overlay 'book your artist name' + caption with your-link.com link."
+            },
+            {
+              "day": "Tue",
+              "category": "engage",
+              "task": "Post in every community you've been active in: 'been working on this for months — drops Friday. pre-save means everything.' Personal tone, not spam."
+            },
+            {
+              "day": "Tue",
+              "category": "engage",
+              "task": "DM the 5 venue contacts from Week 3: 'hey — I have a new track dropping Friday called Your Track Title. Would love to celebrate with a set somewhere.'"
+            },
+            {
+              "day": "Wed",
+              "category": "content",
+              "task": "TikTok/Reel #9: behind-the-scenes of a specific sound design moment in 'Your Track Title.' '3 days.' Most replay-worthy loop from the track."
+            },
+            {
+              "day": "Thu",
+              "category": "content",
+              "task": "Instagram Stories: countdown sticker, pre-save link sticker, 'book me to DJ' slide with your-link.com link."
+            },
+            {
+              "day": "Thu",
+              "category": "engage",
+              "task": "DM your 10–15 most engaged followers personally. Thank them. Share the pre-save. Ask them to share with one friend."
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "TikTok/Reel #10: 'TOMORROW.' Full energy, best visual, strongest section. Pin to your TikTok profile."
+            },
+            {
+              "day": "Sat",
+              "category": "admin",
+              "task": "Prep ALL release day content: 2 feed posts, 5+ stories, all captions pre-written, streaming links ready to swap in when the track goes live."
+            },
+            {
+              "day": "Sun",
+              "category": "admin",
+              "task": "Final checks: pre-save link works, your-link.com loads on mobile, Spotify for Artists updated, all bios have correct links. Rest up."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Release week — maximum visibility to bookings",
+      "color": "orange",
+      "weeks": [
+        {
+          "label": "Week 6",
+          "subtitle": "Every interaction funnels to streams AND your-link.com",
+          "tasks": [
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "RELEASE DAY. TikTok/Reel #11: 'Your Track Title is out.' Drop + streaming link in bio. Update ALL bios: swap pre-save for streaming link, keep booking link on top."
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "Instagram feed post + story barrage (5+ stories): link stickers to streaming platforms. One story: 'want this energy live? → book me' with your-link.com."
+            },
+            {
+              "day": "Fri",
+              "category": "engage",
+              "task": "Post in every community. DM everyone who pre-saved. Share on personal accounts. Text friends and family the link. First 48 hours of velocity matter most."
+            },
+            {
+              "day": "Sat",
+              "category": "content",
+              "task": "TikTok/Reel #12: reaction content — play 'Your Track Title' through speakers, film friends/crowd vibing. Tag your your city location."
+            },
+            {
+              "day": "Sat",
+              "category": "engage",
+              "task": "Reply to EVERY comment and DM today. Repost anyone who shares. In every reply, weave in that you DJ."
+            },
+            {
+              "day": "Sun",
+              "category": "content",
+              "task": "TikTok/Reel #13: mini DJ mix — transition from another track into 'Your Track Title.' Shows DJ skill for bookers."
+            },
+            {
+              "day": "Mon",
+              "category": "engage",
+              "task": "Engagement blitz: 30 min commenting. Share in 2–3 new communities. DM 5 more your city venues/promoters with the track link and booking page."
+            },
+            {
+              "day": "Tue",
+              "category": "content",
+              "task": "TikTok/Reel #14: meme format — 'when the drop hits on Your Track Title' using your track as a TikTok sound. Make the audio usable by others."
+            },
+            {
+              "day": "Wed",
+              "category": "playlist",
+              "task": "Follow up with playlist curators. Submit to new playlists discovered during release week. Thank every curator who added you."
+            },
+            {
+              "day": "Thu",
+              "category": "admin",
+              "task": "Full analytics deep dive: Spotify streams/saves/playlist adds, social follower growth, your-link.com visits, booking inquiries. Document everything."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Post-release — sustain momentum",
+      "color": "gray",
+      "weeks": [
+        {
+          "label": "Weeks 7–8",
+          "subtitle": "Don't disappear — this is where most artists drop the ball",
+          "tasks": [
+            {
+              "day": "Mon",
+              "category": "content",
+              "task": "Post 2–3 Reels/TikToks per week using 'Your Track Title' audio. Remix angles: 'when they said you couldn't,' 'your city at 2am,' 'that one friend who always hated.'"
+            },
+            {
+              "day": "Tue",
+              "category": "engage",
+              "task": "Continue daily engagement: 15 min commenting, replying, building relationships. Consistency separates artists who grow from artists who spike and fade."
+            },
+            {
+              "day": "Wed",
+              "category": "content",
+              "task": "Post educational/authority content: 'how to read a room as a DJ,' 'my DJ setup for events,' 'what I learned from my worst set.' Drives booking page traffic."
+            },
+            {
+              "day": "Thu",
+              "category": "engage",
+              "task": "Reach out to 3 your city DJs or producers for potential collabs. Even a simple Instagram Live together helps."
+            },
+            {
+              "day": "Fri",
+              "category": "content",
+              "task": "Post a 'thank you' video: streams, new followers, what's next. Mention upcoming availability for bookings."
+            },
+            {
+              "day": "Sat",
+              "category": "admin",
+              "task": "Plan your next release. The rollout never truly stops — each track builds on the last. Start the cycle again."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
