@@ -1,4 +1,5 @@
 const { app, BrowserWindow, shell, Tray, Menu, nativeImage } = require("electron");
+const fs = require("node:fs");
 const path = require("node:path");
 
 const isPackaged = app.isPackaged;
@@ -12,6 +13,50 @@ let appIsQuitting = false;
 if (isPackaged && process.platform === "darwin") {
   app.disableHardwareAcceleration();
 }
+
+function loadEnvFile() {
+  const envPath = path.join(__dirname, "../.env");
+  if (!fs.existsSync(envPath)) return;
+
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const index = trimmed.indexOf("=");
+    if (index === -1) continue;
+    const key = trimmed.slice(0, index).trim();
+    const value = trimmed.slice(index + 1).trim();
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
+
+function readBuiltBackendMode() {
+  const modePath = path.join(__dirname, "../client/dist/backend-mode.json");
+  if (!fs.existsSync(modePath)) return null;
+
+  try {
+    return JSON.parse(fs.readFileSync(modePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function usesCloudBackend() {
+  if (process.env.ROLLOUT_USE_CLOUD === "1") {
+    return true;
+  }
+
+  if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) {
+    return true;
+  }
+
+  const builtMode = readBuiltBackendMode();
+  return builtMode?.mode === "cloud";
+}
+
+loadEnvFile();
+const useCloudBackend = usesCloudBackend();
 
 function getServerEntry() {
   return path.join(__dirname, "../server/dist/server/src/index.js");
@@ -58,6 +103,10 @@ async function backendAlreadyRunning() {
 }
 
 async function startBackend() {
+  if (useCloudBackend) {
+    return;
+  }
+
   if (useViteDevServer) {
     return waitForBackend();
   }

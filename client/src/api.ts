@@ -149,3 +149,4 @@ export async function initAppData() {
 
 export { isSupabaseConfigured } from "./lib/config";
 export { onAuthStateChange } from "./data/supabase-store";
+export { subscribeToCloudChanges } from "./lib/cloud-sync";

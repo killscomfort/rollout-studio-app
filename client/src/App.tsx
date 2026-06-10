@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
-import { initAppData, isSupabaseConfigured, onAuthStateChange } from "./api";
+import { initAppData, isSupabaseConfigured, onAuthStateChange, subscribeToCloudChanges } from "./api";
 import { getSession } from "./lib/supabase";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectListPage } from "./pages/ProjectListPage";
@@ -27,6 +27,7 @@ export default function App() {
   const [view, setView] = useState<View>("list");
   const [projectId, setProjectId] = useState<string | null>(null);
   const [workspaceKey, setWorkspaceKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isSupabaseConfigured() || widgetMode) return;
@@ -43,6 +44,14 @@ export default function App() {
       setSignedIn(false);
     });
   }, [widgetMode]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !signedIn || widgetMode) return;
+    return subscribeToCloudChanges(() => {
+      setRefreshKey((value) => value + 1);
+      setWorkspaceKey((value) => value + 1);
+    });
+  }, [signedIn, widgetMode]);
 
   useEffect(() => {
     if (widgetMode) {
@@ -76,6 +85,7 @@ export default function App() {
     if (view === "list") {
       return (
         <ProjectListPage
+          key={refreshKey}
           onOpenProject={(id) => {
             localStorage.setItem(ACTIVE_PROJECT_KEY, id);
             setProjectId(id);
@@ -88,6 +98,7 @@ export default function App() {
     if (!projectId) {
       return (
         <ProjectListPage
+          key={refreshKey}
           onOpenProject={(id) => {
             localStorage.setItem(ACTIVE_PROJECT_KEY, id);
             setProjectId(id);

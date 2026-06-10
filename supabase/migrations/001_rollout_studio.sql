@@ -219,3 +219,25 @@ create policy "task_progress_update_own"
 create policy "task_progress_delete_own"
   on public.task_progress for delete
   using (auth.uid() = user_id);
+
+alter table public.projects replica identity full;
+alter table public.task_progress replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'projects'
+  ) then
+    alter publication supabase_realtime add table public.projects;
+  end if;
+
+  if not exists (
+    select 1
+    from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'task_progress'
+  ) then
+    alter publication supabase_realtime add table public.task_progress;
+  end if;
+end $$;

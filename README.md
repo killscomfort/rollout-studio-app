@@ -14,9 +14,11 @@ npm rebuild better-sqlite3
 npm start
 ```
 
-## Supabase cloud sync (recommended)
+## Supabase cloud sync (recommended for sharing)
 
-Without Supabase, data stays on each device. With Supabase, Mac and iPhone stay in sync automatically after sign-in.
+Without Supabase, data stays on each device. With Supabase, Mac and iPhone stay in sync automatically after sign-in — and you can share the app with others using the same backend.
+
+See **[SHARING.md](./SHARING.md)** for the full team setup guide.
 
 ### 1. Create a Supabase project
 
@@ -97,8 +99,10 @@ Without Supabase:
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Desktop dev mode (Electron + Vite + API server) |
-| `npm start` | Build and launch desktop app |
+| `npm run setup:cloud` | Verify Supabase env and connection |
+| `npm run dev` | Auto cloud or local dev mode |
+| `npm run dev:cloud` | Dev mode with Supabase only |
+| `npm run start:cloud` | Desktop build using Supabase only |
 | `npm run build:ios` | Build web bundle and sync to `ios/` |
 | `npm run open:ios` | Open Xcode project |
 
