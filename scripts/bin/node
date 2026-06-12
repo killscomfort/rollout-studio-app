@@ -1,0 +1,3 @@
+#!/bin/bash
+export ELECTRON_RUN_AS_NODE=1
+exec "$(cd "$(dirname "$0")/../.." && pwd)/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron" "$@"

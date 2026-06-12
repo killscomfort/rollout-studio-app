@@ -4,6 +4,10 @@ const path = require("node:path");
 
 const isPackaged = app.isPackaged;
 const useViteDevServer = !isPackaged && process.env.ROLLOUT_USE_VITE === "1";
+
+if (useViteDevServer) {
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
+}
 const API_PORT = process.env.ROLLOUT_PORT || "3847";
 let widgetWindow = null;
 let mainWindow = null;
@@ -136,6 +140,28 @@ function attachExternalLinks(win) {
     return { action: "deny" };
   });
 
+  win.webContents.on("console-message", (...args) => {
+    const event = args[0];
+    const level =
+      typeof event === "object" && event && "level" in event ? event.level : args[1];
+    const message =
+      typeof event === "object" && event && "message" in event
+        ? event.message
+        : args[2];
+    const lineNumber =
+      typeof event === "object" && event && "lineNumber" in event
+        ? event.lineNumber
+        : args[3];
+    const sourceId =
+      typeof event === "object" && event && "sourceId" in event
+        ? event.sourceId
+        : args[4];
+
+    if (level >= 2 && !String(message).includes("Electron Security Warning")) {
+      console.error(`[renderer] ${message} (${sourceId}:${lineNumber})`);
+    }
+  });
+
   win.webContents.on("render-process-gone", (_event, details) => {
     console.error("Renderer crashed:", details.reason);
   });
@@ -173,7 +199,7 @@ function createWidgetWindow() {
     resizable: true,
     hasShadow: true,
     title: "Rollout Widget",
-    backgroundColor: "#0f1115",
+    backgroundColor: "#8ec9f5",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,
@@ -203,7 +229,7 @@ function createWidgetWindow() {
   return widgetWindow;
 }
 
-function createMainWindow(projectId) {
+function showMainWindow(projectId) {
   if (mainWindow) {
     mainWindow.show();
     mainWindow.focus();
@@ -213,6 +239,14 @@ function createMainWindow(projectId) {
       );
     }
     return mainWindow;
+  }
+
+  return createMainWindow(projectId);
+}
+
+function createMainWindow(projectId) {
+  if (mainWindow) {
+    return showMainWindow(projectId);
   }
 
   mainWindow = new BrowserWindow({
@@ -238,11 +272,15 @@ function createMainWindow(projectId) {
 
   loadWindowContent(mainWindow, projectId ? `open/${projectId}` : "");
 
+  mainWindow.on("close", (event) => {
+    if (!appIsQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
   mainWindow.on("closed", () => {
     mainWindow = null;
-    if (!appIsQuitting && widgetWindow) {
-      widgetWindow.show();
-    }
   });
 
   return mainWindow;
@@ -274,7 +312,7 @@ function createTray() {
     },
     {
       label: "Open Full App",
-      click: () => createMainWindow(),
+      click: () => showMainWindow(),
     },
     { type: "separator" },
     {
@@ -300,11 +338,17 @@ function registerIpc() {
   const { ipcMain } = require("electron");
 
   ipcMain.handle("open-main", (_event, projectId) => {
-    createMainWindow(projectId);
+    showMainWindow(projectId);
   });
 
   ipcMain.handle("open-widget", () => {
     createWidgetWindow();
+  });
+
+  ipcMain.handle("close-widget", () => {
+    if (widgetWindow) {
+      widgetWindow.hide();
+    }
   });
 
   ipcMain.handle("toggle-always-on-top", () => {
@@ -325,11 +369,7 @@ if (!gotLock) {
   app.quit();
 } else {
   app.on("second-instance", () => {
-    createWidgetWindow();
-    if (mainWindow) {
-      mainWindow.show();
-      mainWindow.focus();
-    }
+    showMainWindow();
   });
 }
 
@@ -347,13 +387,16 @@ app.whenReady().then(async () => {
   }
 
   createTray();
+  showMainWindow();
   createWidgetWindow();
 
   app.on("activate", () => {
-    createWidgetWindow();
+    showMainWindow();
   });
 });
 
 app.on("window-all-closed", () => {
-  // Keep running in the menu bar tray on macOS.
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });

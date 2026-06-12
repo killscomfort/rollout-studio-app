@@ -7,6 +7,7 @@ import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ProjectWorkspace } from "./pages/ProjectWorkspace";
 import { WidgetPanel } from "./pages/WidgetPanel";
+import { WidgetSkyBackground } from "./components/WidgetSkyBackground";
 
 type View = "list" | "workspace" | "settings";
 
@@ -35,13 +36,19 @@ export default function App() {
       return;
     }
 
-    void getSession().then((session) => {
-      setSignedIn(Boolean(session));
-    });
+    void getSession()
+      .then((session) => {
+        setSignedIn(Boolean(session));
+      })
+      .catch(() => {
+        setSignedIn(false);
+      });
 
     return onAuthStateChange((next) => {
       if (next) {
-        void initAppData().finally(() => setSignedIn(true));
+        void initAppData()
+          .then(() => setSignedIn(true))
+          .catch(() => setSignedIn(false));
         return;
       }
       setSignedIn(false);
@@ -116,7 +123,7 @@ export default function App() {
         <ProjectSettingsPage
           projectId={projectId}
           onBack={() => setView("workspace")}
-          onSaved={() => setWorkspaceKey((value) => value + 1)}
+          onPlanChanged={() => setWorkspaceKey((value) => value + 1)}
           onDeleted={() => {
             localStorage.removeItem(ACTIVE_PROJECT_KEY);
             setProjectId(null);
@@ -152,24 +159,38 @@ export default function App() {
       return (
         <div className="widget-root">
           <div className="widget-shell">
-            <div className="widget-header">
-              <div className="widget-drag">
-                <div className="widget-kicker">Rollout widget</div>
-                <div className="widget-title">Sign in required</div>
+            <WidgetSkyBackground />
+            <div className="widget-content">
+              <div className="widget-header">
+                <div className="widget-drag">
+                  <div className="widget-kicker">Rollout widget</div>
+                  <div className="widget-title">Sign in required</div>
+                </div>
+                <div className="widget-actions">
+                  <button
+                    type="button"
+                    className="widget-icon-button widget-close-button"
+                    title="Close widget"
+                    aria-label="Close widget"
+                    onClick={() => void window.rolloutStudio?.closeWidget?.()}
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="widget-empty">
-              Sign in through the full app, then reopen the widget to sync your
-              checklist.
-            </div>
-            <div className="widget-footer">
-              <button
-                type="button"
-                className="button primary widget-open-full"
-                onClick={() => window.rolloutStudio?.openMain()}
-              >
-                Open full app
-              </button>
+              <div className="widget-empty">
+                Sign in through the full app, then reopen the widget to sync your
+                checklist.
+              </div>
+              <div className="widget-footer">
+                <button
+                  type="button"
+                  className="button primary widget-open-full"
+                  onClick={() => window.rolloutStudio?.openMain()}
+                >
+                  Open full app
+                </button>
+              </div>
             </div>
           </div>
         </div>

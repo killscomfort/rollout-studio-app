@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
-import type { ProjectDetail } from "../../../shared/types";
+import type { ProjectDetail, ProjectTemplate } from "../../../shared/types";
+import { PlanEditor } from "../components/PlanEditor";
 import { api } from "../api";
 
 interface ProjectSettingsPageProps {
   projectId: string;
   onBack: () => void;
-  onSaved: () => void;
+  onPlanChanged: () => void;
   onDeleted: () => void;
+}
+
+async function reloadProject(projectId: string) {
+  const loaded = await api.getProject(projectId);
+  if (!loaded) {
+    throw new Error("Project not found");
+  }
+  return loaded;
 }
 
 export function ProjectSettingsPage({
   projectId,
   onBack,
-  onSaved,
+  onPlanChanged,
   onDeleted,
 }: ProjectSettingsPageProps) {
   const [project, setProject] = useState<ProjectDetail | null>(null);
@@ -20,56 +29,26 @@ export function ProjectSettingsPage({
   const [tagline, setTagline] = useState("");
   const [bookingUrl, setBookingUrl] = useState("");
   const [funnelNote, setFunnelNote] = useState("");
-  const [planJson, setPlanJson] = useState("");
   const [templateSlug, setTemplateSlug] = useState("blank");
   const [templates, setTemplates] = useState<
     Array<{ slug: string; name: string; tagline: string }>
   >([]);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editorKey, setEditorKey] = useState(0);
 
   useEffect(() => {
     void (async () => {
       try {
         const [loaded, templateList] = await Promise.all([
-          api.getProject(projectId),
+          reloadProject(projectId),
           api.listTemplates(),
         ]);
-        if (!loaded) {
-          setError("Project not found");
-          return;
-        }
         setProject(loaded);
         setName(loaded.name);
         setTagline(loaded.tagline);
         setBookingUrl(loaded.bookingUrl);
         setFunnelNote(loaded.funnelNote);
-        setPlanJson(
-          JSON.stringify(
-            {
-              slug: loaded.slug,
-              name: loaded.name,
-              tagline: loaded.tagline,
-              bookingUrl: loaded.bookingUrl,
-              funnelNote: loaded.funnelNote,
-              phases: loaded.phases.map(({ title, color, weeks }) => ({
-                title,
-                color,
-                weeks: weeks.map(({ label, subtitle, tasks }) => ({
-                  label,
-                  subtitle,
-                  tasks: tasks.map(({ day, category, task }) => ({
-                    day,
-                    category,
-                    task,
-                  })),
-                })),
-              })),
-            },
-            null,
-            2
-          )
-        );
         setTemplates(templateList);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load settings");
@@ -82,41 +61,65 @@ export function ProjectSettingsPage({
     setMessage(null);
     setError(null);
     try {
-      await api.updateProject(projectId, {
+      const updated = await api.updateProject(projectId, {
         name,
         tagline,
         bookingUrl,
         funnelNote,
       });
+      if (!updated) {
+        throw new Error("Project not found");
+      }
+      setProject(updated);
+      setName(updated.name);
       setMessage("Project settings saved.");
-      onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");
     }
   }
 
-  async function importPlan() {
+  async function savePlan(template: ProjectTemplate) {
     setMessage(null);
     setError(null);
-    try {
-      const parsed = JSON.parse(planJson);
-      await api.replacePlan(projectId, parsed);
-      setMessage("Plan imported successfully.");
-      onSaved();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Invalid plan JSON or import failed"
-      );
+    if (
+      !window.confirm(
+        "Save this plan? Your schedule will update and all checked tasks will reset."
+      )
+    ) {
+      return;
     }
+    await api.replacePlan(projectId, template);
+    const loaded = await reloadProject(projectId);
+    setProject(loaded);
+    setName(loaded.name);
+    setTagline(loaded.tagline);
+    setBookingUrl(loaded.bookingUrl);
+    setFunnelNote(loaded.funnelNote);
+    setEditorKey((value) => value + 1);
+    setMessage("Plan saved.");
+    onPlanChanged();
   }
 
   async function resetPlan() {
     setMessage(null);
     setError(null);
+    if (
+      !window.confirm(
+        "Reset the plan from this template? All checked tasks will be cleared."
+      )
+    ) {
+      return;
+    }
     try {
-      await api.resetPlan(projectId, templateSlug);
+      const updated = await api.resetPlan(projectId, templateSlug);
+      setProject(updated);
+      setName(updated.name);
+      setTagline(updated.tagline);
+      setBookingUrl(updated.bookingUrl);
+      setFunnelNote(updated.funnelNote);
+      setEditorKey((value) => value + 1);
       setMessage(`Plan reset from ${templateSlug} template.`);
-      onSaved();
+      onPlanChanged();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to reset plan");
     }
@@ -127,8 +130,12 @@ export function ProjectSettingsPage({
     if (!window.confirm(`Delete "${project.name}"? This cannot be undone.`)) {
       return;
     }
-    await api.deleteProject(projectId);
-    onDeleted();
+    try {
+      await api.deleteProject(projectId);
+      onDeleted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete project");
+    }
   }
 
   if (!project) {
@@ -146,15 +153,15 @@ export function ProjectSettingsPage({
       <div className="page-header">
         <div>
           <h1 className="page-title">Project settings</h1>
-          <p className="page-subtitle">{project.name}</p>
+          <p className="page-subtitle">{name}</p>
         </div>
       </div>
 
-      {message ? <div className="callout">{message}</div> : null}
+      {message ? <div className="callout success">{message}</div> : null}
       {error ? <div className="callout">{error}</div> : null}
 
       <div className="panel-card" style={{ marginBottom: 20 }}>
-        <h2 className="section-title">Front-end branding</h2>
+        <h2 className="section-title">Project branding</h2>
         <form className="form-grid" onSubmit={saveMeta}>
           <label>
             Project name
@@ -184,32 +191,28 @@ export function ProjectSettingsPage({
           </label>
           <div className="toolbar">
             <button type="submit" className="button primary">
-              Save settings
+              Save branding
             </button>
           </div>
         </form>
       </div>
 
       <div className="panel-card" style={{ marginBottom: 20 }}>
-        <h2 className="section-title">Back-end plan customization</h2>
-        <p className="page-subtitle" style={{ marginBottom: 14 }}>
-          Edit the JSON plan below to customize phases, weeks, and tasks per
-          project. Import replaces the current schedule.
-        </p>
-        <textarea
-          value={planJson}
-          onChange={(event) => setPlanJson(event.target.value)}
-          style={{ width: "100%", minHeight: 360, fontFamily: "monospace" }}
+        <h2 className="section-title">Rollout plan</h2>
+        <PlanEditor
+          key={editorKey}
+          project={project}
+          onSave={savePlan}
+          onError={setError}
         />
-        <div className="toolbar" style={{ marginTop: 14 }}>
-          <button type="button" className="button primary" onClick={importPlan}>
-            Import plan JSON
-          </button>
-        </div>
       </div>
 
       <div className="panel-card" style={{ marginBottom: 20 }}>
         <h2 className="section-title">Reset from template</h2>
+        <p className="page-subtitle" style={{ marginBottom: 12 }}>
+          Start over from a template. Branding fields above are kept; tasks and
+          progress are replaced.
+        </p>
         <div className="form-grid">
           <label>
             Template
@@ -225,7 +228,7 @@ export function ProjectSettingsPage({
             </select>
           </label>
           <div className="toolbar">
-            <button type="button" className="button" onClick={resetPlan}>
+            <button type="button" className="button" onClick={() => void resetPlan()}>
               Reset plan
             </button>
           </div>
@@ -234,7 +237,7 @@ export function ProjectSettingsPage({
 
       <div className="panel-card">
         <h2 className="section-title">Danger zone</h2>
-        <button type="button" className="button danger" onClick={deleteProject}>
+        <button type="button" className="button danger" onClick={() => void deleteProject()}>
           Delete project
         </button>
       </div>

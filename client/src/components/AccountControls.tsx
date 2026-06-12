@@ -6,9 +6,13 @@ export function AccountControls() {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    void getSession().then((session) => {
-      setEmail(session?.user.email ?? null);
-    });
+    void getSession()
+      .then((session) => {
+        setEmail(session?.user.email ?? null);
+      })
+      .catch(() => {
+        setEmail(null);
+      });
   }, []);
 
   if (!email) return null;

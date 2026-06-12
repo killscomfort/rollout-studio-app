@@ -3,6 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { ProjectDetail, Task } from "../../../shared/types";
 import { CATEGORY_LABELS } from "../../../shared/types";
 import { api, isSupabaseConfigured, subscribeToCloudChanges } from "../api";
+import {
+  celebrateTaskComplete,
+  markTaskRowCelebrating,
+} from "../lib/celebrate-task";
+import { WidgetSkyBackground } from "../components/WidgetSkyBackground";
 
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -108,29 +113,42 @@ export function WidgetPanel() {
 
   return (
     <div className="widget-shell">
-      <div className="widget-header">
-        <div className="widget-drag">
-          <div className="widget-kicker">Rollout widget</div>
-          <div className="widget-title">{project?.name ?? "Rollout Studio"}</div>
+      <WidgetSkyBackground />
+      <div className="widget-content">
+        <div className="widget-header">
+          <div className="widget-drag">
+            <div className="widget-kicker">Rollout widget</div>
+            <div className="widget-title">{project?.name ?? "Rollout Studio"}</div>
+          </div>
+          <div className="widget-actions">
+            {!isNative ? (
+              <>
+                <button
+                  type="button"
+                  className="widget-icon-button"
+                  title={pinned ? "Unpin widget" : "Pin widget"}
+                  onClick={handlePinToggle}
+                >
+                  {pinned ? "Pin" : "Float"}
+                </button>
+                <button
+                  type="button"
+                  className="widget-icon-button widget-close-button"
+                  title="Close widget"
+                  aria-label="Close widget"
+                  onClick={() => void window.rolloutStudio?.closeWidget?.()}
+                >
+                  ×
+                </button>
+              </>
+            ) : null}
+          </div>
         </div>
-        <div className="widget-actions">
-          {!isNative ? (
-            <button
-              type="button"
-              className="widget-icon-button"
-              title={pinned ? "Unpin widget" : "Pin widget"}
-              onClick={handlePinToggle}
-            >
-              {pinned ? "Pin" : "Float"}
-            </button>
-          ) : null}
-        </div>
-      </div>
 
       {error ? <div className="widget-error">{error}</div> : null}
 
       {project ? (
-        <>
+        <div className="widget-body">
           <div className="widget-progress-block">
             <div className="widget-progress-meta">
               <span>{stats.pct}% complete</span>
@@ -149,14 +167,19 @@ export function WidgetPanel() {
             {today.tasks.length === 0 ? (
               <div className="widget-empty">Nothing scheduled for today.</div>
             ) : (
-              today.tasks.slice(0, 6).map((task) => (
+              today.tasks.map((task) => (
                 <label key={task.id} className="widget-task-row">
                   <input
                     type="checkbox"
                     checked={task.completed}
-                    onChange={(event) =>
-                      void toggleTask(task.id, event.target.checked)
-                    }
+                    onChange={(event) => {
+                      const completed = event.target.checked;
+                      if (completed) {
+                        celebrateTaskComplete(event.currentTarget);
+                        markTaskRowCelebrating(event.currentTarget);
+                      }
+                      void toggleTask(task.id, completed);
+                    }}
                   />
                   <span className="widget-task-copy">
                     <span className="widget-task-category">
@@ -168,7 +191,7 @@ export function WidgetPanel() {
               ))
             )}
           </div>
-        </>
+        </div>
       ) : (
         <div className="widget-empty">
           No projects yet. Open the full app to create one.
@@ -188,6 +211,7 @@ export function WidgetPanel() {
           </button>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

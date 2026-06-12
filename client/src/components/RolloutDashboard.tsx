@@ -4,6 +4,10 @@ import {
   CATEGORY_LABELS,
   PHASE_COLORS,
 } from "../../../shared/types";
+import {
+  celebrateTaskComplete,
+  markTaskRowCelebrating,
+} from "../lib/celebrate-task";
 
 type CategoryFilter = "all" | TaskCategory;
 
@@ -301,9 +305,14 @@ export function RolloutDashboard({
                         <input
                           type="checkbox"
                           checked={task.completed}
-                          onChange={(event) =>
-                            onToggleTask(task.id, event.target.checked)
-                          }
+                          onChange={(event) => {
+                            const completed = event.target.checked;
+                            if (completed) {
+                              celebrateTaskComplete(event.currentTarget);
+                              markTaskRowCelebrating(event.currentTarget);
+                            }
+                            onToggleTask(task.id, completed);
+                          }}
                         />
                       </td>
                       <td className="day">{task.day}</td>

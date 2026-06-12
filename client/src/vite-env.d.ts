@@ -16,6 +16,7 @@ interface Window {
     isWidget: () => boolean;
     openMain: (projectId?: string) => Promise<void>;
     openWidget: () => Promise<void>;
+    closeWidget: () => Promise<void>;
     toggleAlwaysOnTop: () => Promise<boolean>;
     quitApp: () => Promise<void>;
   };
