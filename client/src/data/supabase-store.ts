@@ -29,6 +29,7 @@ interface ProjectRow {
   tagline: string;
   booking_url: string;
   funnel_note: string;
+  release_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -151,6 +152,7 @@ async function fetchUserData(userId: string): Promise<SyncData> {
       tagline: project.tagline,
       bookingUrl: project.booking_url,
       funnelNote: project.funnel_note,
+      releaseDate: project.release_date?.trim() || null,
       createdAt: project.created_at,
       updatedAt: project.updated_at,
     })),
@@ -201,6 +203,7 @@ function mapSummary(project: SyncData["projects"][number], data: SyncData): Proj
     tagline: project.tagline,
     bookingUrl: project.bookingUrl,
     funnelNote: project.funnelNote,
+    releaseDate: project.releaseDate ?? null,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     totalTasks,
@@ -394,6 +397,8 @@ export async function updateProject(
       tagline: input.tagline ?? existing.tagline,
       booking_url: input.bookingUrl ?? existing.bookingUrl,
       funnel_note: input.funnelNote ?? existing.funnelNote,
+      release_date:
+        input.releaseDate !== undefined ? input.releaseDate : existing.releaseDate,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -554,6 +559,7 @@ async function replaceAllData(userId: string, data: SyncData) {
       tagline: project.tagline,
       booking_url: project.bookingUrl,
       funnel_note: project.funnelNote,
+      release_date: project.releaseDate,
       created_at: project.createdAt,
       updated_at: project.updatedAt,
     });

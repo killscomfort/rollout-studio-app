@@ -19,7 +19,7 @@ Installers copy `.env.example` → `.env` and paste the anon key. Each user stil
 For project **fwsmllrlevehhxdtzzkk**:
 
 1. [Open API settings](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/settings/api) → copy the **anon public** key into `.env` as `VITE_SUPABASE_ANON_KEY`
-2. [SQL Editor](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/sql/new) → paste and run `supabase/migrations/001_rollout_studio.sql`
+2. [SQL Editor](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/sql/new) → paste and run `supabase/migrations/001_rollout_studio.sql`, then `supabase/migrations/002_release_date.sql`
 3. [Authentication → Providers](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/auth/providers) → enable **Email**
 4. Verify locally:
 

@@ -7,6 +7,7 @@ export interface SyncProject {
   tagline: string;
   bookingUrl: string;
   funnelNote: string;
+  releaseDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -105,7 +106,10 @@ function appendProject(data: SyncData, projectId: string, incoming: SyncData) {
   const project = incoming.projects.find((item) => item.id === projectId);
   if (!project) return;
 
-  data.projects.push({ ...project });
+  data.projects.push({
+    ...project,
+    releaseDate: project.releaseDate ?? null,
+  });
   data.phases.push(
     ...incoming.phases
       .filter((phase) => phase.projectId === projectId)

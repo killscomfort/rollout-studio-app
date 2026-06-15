@@ -4,6 +4,11 @@ import { createSyncBundle, mergeSyncData, type SyncBundle } from "../../shared/s
 
 type Row = Record<string, unknown>;
 
+function mapReleaseDate(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+  return raw || null;
+}
+
 export function exportSyncData(db: Database.Database): SyncData {
   const projects = (
     db.prepare("SELECT * FROM projects ORDER BY updated_at DESC").all() as Row[]
@@ -14,6 +19,7 @@ export function exportSyncData(db: Database.Database): SyncData {
     tagline: String(row.tagline),
     bookingUrl: String(row.booking_url),
     funnelNote: String(row.funnel_note),
+    releaseDate: mapReleaseDate(row.release_date),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   }));
@@ -71,8 +77,8 @@ function replaceAllData(db: Database.Database, data: SyncData) {
     db.prepare("DELETE FROM projects").run();
 
     const insertProject = db.prepare(
-      `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, created_at, updated_at)
-       VALUES (@id, @slug, @name, @tagline, @bookingUrl, @funnelNote, @createdAt, @updatedAt)`
+      `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, release_date, created_at, updated_at)
+       VALUES (@id, @slug, @name, @tagline, @bookingUrl, @funnelNote, @releaseDate, @createdAt, @updatedAt)`
     );
     const insertPhase = db.prepare(
       `INSERT INTO phases (id, project_id, sort_order, title, color)
@@ -91,7 +97,12 @@ function replaceAllData(db: Database.Database, data: SyncData) {
        VALUES (@projectId, @taskId, 1, @completedAt)`
     );
 
-    for (const project of data.projects) insertProject.run(project);
+    for (const project of data.projects) {
+      insertProject.run({
+        ...project,
+        releaseDate: project.releaseDate ?? null,
+      });
+    }
     for (const phase of data.phases) insertPhase.run(phase);
     for (const week of data.weeks) insertWeek.run(week);
     for (const task of data.tasks) insertTask.run(task);

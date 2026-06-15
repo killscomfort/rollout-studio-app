@@ -29,6 +29,7 @@ interface ProjectRow {
   tagline: string;
   bookingUrl: string;
   funnelNote: string;
+  releaseDate: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -91,7 +92,11 @@ function loadDb(): NativeDb {
     return emptyDb();
   }
   try {
-    return JSON.parse(raw) as NativeDb;
+    const parsed = JSON.parse(raw) as NativeDb;
+    for (const project of parsed.projects) {
+      project.releaseDate = project.releaseDate ?? null;
+    }
+    return parsed;
   } catch {
     return emptyDb();
   }
@@ -167,6 +172,7 @@ function mapSummary(project: ProjectRow, database: NativeDb): ProjectSummary {
     tagline: project.tagline,
     bookingUrl: project.bookingUrl,
     funnelNote: project.funnelNote,
+    releaseDate: project.releaseDate ?? null,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     totalTasks,
@@ -227,6 +233,7 @@ export async function createProjectFromTemplate(
     tagline: input.tagline ?? template.tagline,
     bookingUrl: input.bookingUrl ?? template.bookingUrl,
     funnelNote: input.funnelNote ?? template.funnelNote,
+    releaseDate: null,
     createdAt: now,
     updatedAt: now,
   });
@@ -319,6 +326,9 @@ export async function updateProject(
   project.tagline = input.tagline ?? existing.tagline;
   project.bookingUrl = input.bookingUrl ?? existing.bookingUrl;
   project.funnelNote = input.funnelNote ?? existing.funnelNote;
+  if (input.releaseDate !== undefined) {
+    project.releaseDate = input.releaseDate;
+  }
   project.updatedAt = new Date().toISOString();
   saveDb();
 
@@ -460,7 +470,10 @@ function snapshot(database: NativeDb): SyncData {
 }
 
 function replaceAll(database: NativeDb, data: SyncData) {
-  database.projects = data.projects.map((project) => ({ ...project }));
+  database.projects = data.projects.map((project) => ({
+    ...project,
+    releaseDate: project.releaseDate ?? null,
+  }));
   database.phases = data.phases.map((phase) => ({
     ...phase,
     color: phase.color as PhaseRow["color"],

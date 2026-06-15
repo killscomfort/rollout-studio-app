@@ -48,6 +48,7 @@ export interface ProjectSummary {
   tagline: string;
   bookingUrl: string;
   funnelNote: string;
+  releaseDate: string | null;
   createdAt: string;
   updatedAt: string;
   totalTasks: number;
@@ -97,6 +98,7 @@ export interface UpdateProjectInput {
   tagline?: string;
   bookingUrl?: string;
   funnelNote?: string;
+  releaseDate?: string | null;
 }
 
 export interface UpdateTaskInput {

@@ -77,6 +77,13 @@ export function initDb(db: Database.Database) {
     );
   `);
 
+  const projectColumns = db
+    .prepare("PRAGMA table_info(projects)")
+    .all() as Array<{ name: string }>;
+  if (!projectColumns.some((column) => column.name === "release_date")) {
+    db.exec("ALTER TABLE projects ADD COLUMN release_date TEXT");
+  }
+
   const count = db.prepare("SELECT COUNT(*) AS c FROM projects").get() as { c: number };
   if (count.c === 0) {
     createProjectFromTemplate(db, {
@@ -184,6 +191,11 @@ export function listProjects(db: Database.Database): ProjectSummary[] {
   return rows.map(mapSummary);
 }
 
+function mapReleaseDate(value: unknown): string | null {
+  const raw = String(value ?? "").trim();
+  return raw || null;
+}
+
 function mapSummary(row: Record<string, unknown>): ProjectSummary {
   return {
     id: String(row.id),
@@ -192,6 +204,7 @@ function mapSummary(row: Record<string, unknown>): ProjectSummary {
     tagline: String(row.tagline),
     bookingUrl: String(row.booking_url),
     funnelNote: String(row.funnel_note),
+    releaseDate: mapReleaseDate(row.release_date),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     totalTasks: Number(row.total_tasks ?? 0),
@@ -290,13 +303,16 @@ export function updateProject(
 
   db.prepare(
     `UPDATE projects
-     SET name = ?, tagline = ?, booking_url = ?, funnel_note = ?, updated_at = ?
+     SET name = ?, tagline = ?, booking_url = ?, funnel_note = ?, release_date = ?, updated_at = ?
      WHERE id = ?`
   ).run(
     input.name ?? existing.name,
     input.tagline ?? existing.tagline,
     input.bookingUrl ?? existing.bookingUrl,
     input.funnelNote ?? existing.funnelNote,
+    input.releaseDate !== undefined
+      ? input.releaseDate
+      : existing.releaseDate,
     new Date().toISOString(),
     id
   );
