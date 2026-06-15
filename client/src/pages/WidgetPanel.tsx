@@ -10,17 +10,10 @@ import {
 import { WidgetSkyBackground } from "../components/WidgetSkyBackground";
 
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
-const UNDO_WINDOW_MS = 8000;
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 function todayLabel() {
   return DAY_NAMES[new Date().getDay()];
-}
-
-function truncateLabel(text: string, max = 48) {
-  const trimmed = text.trim();
-  if (trimmed.length <= max) return trimmed;
-  return `${trimmed.slice(0, max - 1)}…`;
 }
 
 function flattenTasks(project: ProjectDetail) {
@@ -42,44 +35,15 @@ export function WidgetPanel() {
   const [pinned, setPinned] = useState(true);
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const [savingTaskId, setSavingTaskId] = useState<string | null>(null);
-  const [undoPrompt, setUndoPrompt] = useState<{ taskId: string; label: string } | null>(
-    null
-  );
-  const undoTimeoutRef = useRef<number | null>(null);
   const taskListRef = useRef<HTMLDivElement>(null);
   const pendingScrollTopRef = useRef<number | null>(null);
-
-  function clearUndoTimeout() {
-    if (undoTimeoutRef.current !== null) {
-      window.clearTimeout(undoTimeoutRef.current);
-      undoTimeoutRef.current = null;
-    }
-  }
-
-  function dismissUndoPrompt() {
-    clearUndoTimeout();
-    setUndoPrompt(null);
-  }
-
-  function showUndoPrompt(taskId: string, label: string) {
-    clearUndoTimeout();
-    setUndoPrompt({ taskId, label });
-    undoTimeoutRef.current = window.setTimeout(() => {
-      undoTimeoutRef.current = null;
-      setUndoPrompt((current) => (current?.taskId === taskId ? null : current));
-    }, UNDO_WINDOW_MS);
-  }
-
-  useEffect(() => {
-    return () => clearUndoTimeout();
-  }, []);
 
   useLayoutEffect(() => {
     if (pendingScrollTopRef.current === null || !taskListRef.current) return;
     const top = pendingScrollTopRef.current;
     pendingScrollTopRef.current = null;
     taskListRef.current.scrollTop = top;
-  }, [project, undoPrompt]);
+  }, [project]);
 
   function rememberTaskListScroll() {
     pendingScrollTopRef.current = taskListRef.current?.scrollTop ?? 0;
@@ -139,10 +103,6 @@ export function WidgetPanel() {
   async function toggleTask(taskId: string, completed: boolean) {
     if (!project) return;
 
-    if (!completed && undoPrompt?.taskId === taskId) {
-      dismissUndoPrompt();
-    }
-
     rememberTaskListScroll();
 
     setProject((current) => {
@@ -174,14 +134,6 @@ export function WidgetPanel() {
     } finally {
       setSavingTaskId(null);
     }
-  }
-
-  async function handleUndoComplete() {
-    if (!undoPrompt) return;
-    const { taskId } = undoPrompt;
-    dismissUndoPrompt();
-    setCelebratingTaskId((current) => (current === taskId ? null : current));
-    await toggleTask(taskId, false);
   }
 
   function scrollToFirstCompleted() {
@@ -233,22 +185,6 @@ export function WidgetPanel() {
             ) : null}
           </div>
         </div>
-
-        {undoPrompt ? (
-          <div className="widget-undo-bar" role="status" aria-live="polite">
-            <span className="widget-undo-text" title={undoPrompt.label}>
-              Marked done: {truncateLabel(undoPrompt.label)}
-            </span>
-            <button
-              type="button"
-              className="widget-undo-button"
-              aria-label={`Undo marking "${undoPrompt.label}" as done`}
-              onClick={() => void handleUndoComplete()}
-            >
-              Undo
-            </button>
-          </div>
-        ) : null}
 
         {error ? <div className="widget-error">{error}</div> : null}
 
@@ -312,9 +248,6 @@ export function WidgetPanel() {
                               ),
                             TASK_CELEBRATION_MS
                           );
-                          showUndoPrompt(task.id, task.task);
-                        } else if (undoPrompt?.taskId === task.id) {
-                          dismissUndoPrompt();
                         }
                         void toggleTask(task.id, completed);
                       }}
