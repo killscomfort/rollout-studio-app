@@ -31,6 +31,10 @@ export const notificationConfig = {
   alertMinutes: Number(process.env.ROLLOUT_ALERT_MINUTES ?? 30),
 };
 
+export function hasIcloudCredentials() {
+  return Boolean(notificationConfig.appleId && notificationConfig.appPassword);
+}
+
 export function requireIcloudCredentials() {
   return {
     appleId: req("ICLOUD_APPLE_ID"),

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import type { NotificationTask } from "../../shared/calendar.ts";
-import { notificationConfig, requireIcloudCredentials } from "./config.ts";
+import { notificationConfig, hasIcloudCredentials, requireIcloudCredentials } from "./config.ts";
 import { connect, findCalendar, upsertEvents } from "./caldav.ts";
 import { sendPushcut } from "./pushcut.ts";
 import { loadState, pushKey, saveState } from "./state.ts";
@@ -148,18 +148,24 @@ async function main(): Promise<void> {
   }
 
   if (doSync) {
-    const { appleId, appPassword } = requireIcloudCredentials();
-    const client = await connect(appleId, appPassword);
-    const calendar = await findCalendar(client, notificationConfig.calendarName);
-    const results = await upsertEvents(
-      client,
-      calendar,
-      tasks,
-      notificationConfig.calendarName,
-      notificationConfig.timezone
-    );
-    for (const result of results) {
-      console.log(`  [cal]  ${result.action.padEnd(7)} ${result.id}`);
+    if (!hasIcloudCredentials()) {
+      console.log(
+        "  [cal]  ICLOUD_APPLE_ID not set — skipping calendar sync (Pushcut still runs)."
+      );
+    } else {
+      const { appleId, appPassword } = requireIcloudCredentials();
+      const client = await connect(appleId, appPassword);
+      const calendar = await findCalendar(client, notificationConfig.calendarName);
+      const results = await upsertEvents(
+        client,
+        calendar,
+        tasks,
+        notificationConfig.calendarName,
+        notificationConfig.timezone
+      );
+      for (const result of results) {
+        console.log(`  [cal]  ${result.action.padEnd(7)} ${result.id}`);
+      }
     }
   }
 
