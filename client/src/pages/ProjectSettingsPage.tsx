@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ProjectDetail, ProjectTemplate } from "../../../shared/types";
 import { PlanEditor } from "../components/PlanEditor";
+import { CalendarSyncPanel } from "../components/CalendarSyncPanel";
 import { api } from "../api";
 
 interface ProjectSettingsPageProps {
@@ -27,6 +28,7 @@ export function ProjectSettingsPage({
   const [tagline, setTagline] = useState("");
   const [bookingUrl, setBookingUrl] = useState("");
   const [funnelNote, setFunnelNote] = useState("");
+  const [releaseDate, setReleaseDate] = useState("");
   const [templateSlug, setTemplateSlug] = useState("blank");
   const [templates, setTemplates] = useState<
     Array<{ slug: string; name: string; tagline: string }>
@@ -47,6 +49,7 @@ export function ProjectSettingsPage({
         setTagline(loaded.tagline);
         setBookingUrl(loaded.bookingUrl);
         setFunnelNote(loaded.funnelNote);
+        setReleaseDate(loaded.releaseDate ?? "");
         setTemplates(templateList);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load settings");
@@ -93,6 +96,7 @@ export function ProjectSettingsPage({
     setTagline(loaded.tagline);
     setBookingUrl(loaded.bookingUrl);
     setFunnelNote(loaded.funnelNote);
+    setReleaseDate(loaded.releaseDate ?? "");
     setEditorKey((value) => value + 1);
     setMessage("Plan saved.");
     onPlanChanged();
@@ -115,6 +119,7 @@ export function ProjectSettingsPage({
       setTagline(updated.tagline);
       setBookingUrl(updated.bookingUrl);
       setFunnelNote(updated.funnelNote);
+      setReleaseDate(updated.releaseDate ?? "");
       setEditorKey((value) => value + 1);
       setMessage(`Plan reset from ${templateSlug} template.`);
       onPlanChanged();
@@ -187,6 +192,18 @@ export function ProjectSettingsPage({
             </button>
           </div>
         </form>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <CalendarSyncPanel
+          project={project}
+          releaseDate={releaseDate}
+          onReleaseDateChange={setReleaseDate}
+          onProjectUpdated={(updated) => {
+            setProject(updated);
+            setReleaseDate(updated.releaseDate ?? "");
+          }}
+        />
       </div>
 
       <div className="panel-card" style={{ marginBottom: 20 }}>

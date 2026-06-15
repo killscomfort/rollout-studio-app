@@ -232,6 +232,24 @@ a {
   line-height: 1.55;
 }
 
+.calendar-panel {
+  margin-bottom: 0;
+}
+
+.calendar-meta {
+  margin: 0 0 16px;
+  color: #9aa3b2;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.calendar-hint {
+  margin: 16px 0 0;
+  color: #9aa3b2;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .auth-shell {
   display: flex;
   align-items: center;

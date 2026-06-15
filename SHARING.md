@@ -46,6 +46,18 @@ Share the repo **and the same `.env` values** with anyone installing the app.
 | Cloud desktop build | `npm run start:cloud` | Supabase (no local server) |
 | iPhone build | `npm run build:ios` | Uses `.env` Supabase keys when present |
 
+## iPhone calendar reminders
+
+Rollout tasks can be exported as **Apple Calendar events** with alerts (standard Calendar notifications on iPhone).
+
+1. Open a project → **Project settings**
+2. Set your **Release date** (the Friday you’re releasing — or use the suggested date)
+3. Tap **Add to Apple Calendar** on iPhone (or **Download calendar file** on Mac)
+4. Choose a calendar in the share sheet and confirm
+5. Make sure **Settings → Notifications → Calendar** is enabled on your iPhone
+
+Each upcoming task becomes a 9:00 AM event with a reminder before it (default 30 minutes). Completed tasks are skipped. Re-export after plan changes to refresh reminders.
+
 ## Local-only (no cloud)
 
 Leave Supabase vars empty in `.env`. The app works on one Mac with SQLite. Use **Export/Import sync file** to move data manually to iPhone.
