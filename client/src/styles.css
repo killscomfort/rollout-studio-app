@@ -80,6 +80,244 @@ a {
   color: #9aa3b2;
 }
 
+.stats-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 0;
+  margin-bottom: 16px;
+}
+
+.stat-card-success .stat-value {
+  color: #3fa266;
+}
+
+.progress-track-lg {
+  height: 8px;
+}
+
+.progress-fill-success {
+  background: #3fa266;
+}
+
+.checklist-shell {
+  max-width: 960px;
+}
+
+.checklist-header {
+  margin-bottom: 20px;
+}
+
+.checklist-progress-block {
+  margin-bottom: 20px;
+}
+
+.checklist-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #9aa3b2;
+}
+
+.checklist-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.checklist-toolbar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9aa3b2;
+}
+
+.phase-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.phase-accordion {
+  padding: 0;
+  overflow: hidden;
+}
+
+.phase-accordion-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.phase-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.phase-accordion-summary::after {
+  content: "▾";
+  margin-left: 10px;
+  color: #9aa3b2;
+  transition: transform 0.15s ease;
+}
+
+.phase-accordion[open] .phase-accordion-summary::after {
+  transform: rotate(180deg);
+}
+
+.phase-accordion-swatch {
+  flex-shrink: 0;
+}
+
+.phase-accordion-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.phase-accordion-count {
+  font-size: 12px;
+  color: #9aa3b2;
+}
+
+.phase-accordion-progress {
+  margin-left: auto;
+  font-size: 12px;
+  color: #9aa3b2;
+}
+
+.phase-accordion-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid #2a3140;
+}
+
+.week-block + .week-block {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #252b36;
+}
+
+.week-block-header {
+  margin-bottom: 10px;
+}
+
+.week-block-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.week-block-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #9aa3b2;
+}
+
+.todo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.todo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #12151b;
+  border: 1px solid #252b36;
+}
+
+.todo-row.done {
+  opacity: 0.72;
+}
+
+.todo-row.task-complete-celebrate {
+  animation: task-celebrate 0.6s ease;
+}
+
+.todo-row-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.todo-row-copy {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.todo-row-meta {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9aa3b2;
+}
+
+.todo-row.done .todo-row-copy {
+  text-decoration: line-through;
+  color: #7a8494;
+}
+
+.todo-edit-button {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.todo-row-editing {
+  display: block;
+}
+
+.todo-edit-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.todo-edit-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #9aa3b2;
+}
+
+.todo-edit-task {
+  grid-column: 1 / -1;
+}
+
+.todo-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.checklist-footer {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #171a21;
+  border: 1px solid #2a3140;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #c5cad3;
+}
+
+.checklist-footer-meta {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #7a8494;
+}
+
 .progress-track {
   height: 6px;
   border-radius: 999px;

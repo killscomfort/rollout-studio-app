@@ -30,7 +30,10 @@
     "check": "node scripts/check.cjs",
     "sync:icloud": "node scripts/rollout-notifications/run-cli.cjs --sync",
     "push:nudges": "node scripts/rollout-notifications/run-cli.cjs --push",
-    "sync:notifications": "node scripts/rollout-notifications/run-cli.cjs"
+    "sync:notifications": "node scripts/rollout-notifications/run-cli.cjs",
+    "notifications:preview": "node scripts/rollout-notifications/run-cli.cjs --preview --project=fuckdahaters",
+    "notifications:test-push": "node scripts/rollout-notifications/run-cli.cjs --test-push",
+    "notifications:test-calendar": "node scripts/rollout-notifications/run-cli.cjs --test-calendar --in=3"
   },
   "build": {
     "appId": "com.rolloutstudio.app",

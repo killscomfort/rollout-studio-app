@@ -16,8 +16,6 @@ export function ProjectWorkspace({
   onProjectLoaded,
 }: ProjectWorkspaceProps) {
   const [project, setProject] = useState<ProjectDetail | null>(null);
-  const [selectedPhaseId, setSelectedPhaseId] = useState("");
-  const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +31,6 @@ export function ProjectWorkspace({
       }
       setProject(next);
       onProjectLoaded(next);
-      setSelectedPhaseId((current) => current || next.phases[0]?.id || "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load project");
     } finally {
@@ -79,14 +76,7 @@ export function ProjectWorkspace({
       {error ? <div className="callout">{error}</div> : null}
       <RolloutDashboard
         project={project}
-        selectedPhaseId={selectedPhaseId}
-        selectedWeekIndex={selectedWeekIndex}
         categoryFilter={categoryFilter}
-        onSelectPhase={(phaseId) => {
-          setSelectedPhaseId(phaseId);
-          setSelectedWeekIndex(0);
-        }}
-        onSelectWeek={setSelectedWeekIndex}
         onCategoryFilter={setCategoryFilter}
         onToggleTask={handleToggleTask}
         onUpdateTask={handleUpdateTask}
