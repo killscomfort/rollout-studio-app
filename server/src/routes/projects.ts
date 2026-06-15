@@ -7,8 +7,8 @@ import {
   getProject,
   listProjects,
   replacePlan,
-  setTaskCompleted,
   updateProject,
+  updateTask,
 } from "../db";
 import { TEMPLATES, listTemplates } from "../templates";
 
@@ -87,12 +87,24 @@ export function createProjectRouter(db: Database) {
 
   router.patch("/:id/tasks/:taskId", (req, res) => {
     try {
-      setTaskCompleted(
-        db,
-        req.params.id,
-        req.params.taskId,
-        Boolean(req.body?.completed)
-      );
+      const body = req.body as {
+        completed?: boolean;
+        day?: string;
+        category?: string;
+        task?: string;
+      };
+
+      if (
+        body.completed === undefined &&
+        body.day === undefined &&
+        body.category === undefined &&
+        body.task === undefined
+      ) {
+        res.status(400).json({ error: "No task fields to update" });
+        return;
+      }
+
+      updateTask(db, req.params.id, req.params.taskId, body);
       const project = getProject(db, req.params.id);
       res.json(project);
     } catch {

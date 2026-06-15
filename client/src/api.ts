@@ -5,6 +5,7 @@ import type {
   ProjectSummary,
   ProjectTemplate,
   UpdateProjectInput,
+  UpdateTaskInput,
 } from "../../shared/types";
 import type { SyncBundle, SyncImportResult } from "../../shared/sync";
 import { isSupabaseConfigured } from "./lib/config";
@@ -81,21 +82,23 @@ export const api = {
         ? localDb.deleteProject(id).then(() => undefined)
         : request<void>(`/api/projects/${id}`, { method: "DELETE" }),
   setTaskCompleted: (projectId: string, taskId: string, completed: boolean) =>
+    api.updateTask(projectId, taskId, { completed }),
+  updateTask: (projectId: string, taskId: string, input: UpdateTaskInput) =>
     useCloudData()
-      ? cloudDb.setTaskCompleted(projectId, taskId, completed).then(async () => {
+      ? cloudDb.updateTask(projectId, taskId, input).then(async () => {
           const project = await cloudDb.getProject(projectId);
           if (!project) throw new Error("Project not found");
           return project;
         })
       : useLocalNativeData()
-        ? localDb.setTaskCompleted(projectId, taskId, completed).then(async () => {
+        ? localDb.updateTask(projectId, taskId, input).then(async () => {
             const project = await localDb.getProject(projectId);
             if (!project) throw new Error("Project not found");
             return project;
           })
         : request<ProjectDetail>(`/api/projects/${projectId}/tasks/${taskId}`, {
             method: "PATCH",
-            body: JSON.stringify({ completed }),
+            body: JSON.stringify(input),
           }),
   replacePlan: (projectId: string, template: ProjectTemplate) =>
     useCloudData()

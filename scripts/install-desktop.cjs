@@ -4,12 +4,16 @@ const os = require("node:os");
 const { spawnSync } = require("node:child_process");
 
 const projectRoot = path.join(__dirname, "..");
-const releaseDir = path.join(projectRoot, "release");
 const desktopDir = path.join(os.homedir(), "Desktop");
 const appName = "Rollout Studio.app";
 const launcherName = "Rollout Studio.command";
 const destApp = path.join(desktopDir, appName);
 const destLauncher = path.join(desktopDir, launcherName);
+const nodeShim = path.join(projectRoot, "scripts/bin/node");
+const electronBinary = path.join(
+  projectRoot,
+  "node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+);
 
 function resolveNodeBin() {
   const candidates = [
@@ -49,63 +53,128 @@ function resolveNodeBin() {
   return "";
 }
 
-const nodeBin = resolveNodeBin();
-const pathPrefix = [
-  nodeBin ? `export PATH="${nodeBin}:$PATH"` : null,
-  `export PATH="${projectRoot}/scripts/bin:$PATH"`,
-]
-  .filter(Boolean)
-  .join("\n");
+function runBuild() {
+  const runner = fs.existsSync(nodeShim) ? nodeShim : "node";
+  console.log("Building latest Rollout Studio…");
+  const result = spawnSync(runner, [path.join(projectRoot, "scripts/check.cjs")], {
+    cwd: projectRoot,
+    stdio: "inherit",
+    env: fs.existsSync(nodeShim)
+      ? { ...process.env, ELECTRON_RUN_AS_NODE: "1" }
+      : process.env,
+  });
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+}
 
-function findBuiltApp(dir) {
-  if (!fs.existsSync(dir)) return null;
+function launcherScript() {
+  const nodeBin = resolveNodeBin();
+  const nodeRunner = fs.existsSync(nodeShim) ? nodeShim : "node";
+  const pathExports = [
+    nodeBin ? `export PATH="${nodeBin}:$PATH"` : null,
+    `export PATH="${path.join(projectRoot, "scripts/bin")}:$PATH"`,
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name.endsWith(".app")) {
-        return fullPath;
-      }
-      const nested = findBuiltApp(fullPath);
-      if (nested) return nested;
-    }
+  return `#!/bin/bash
+set -euo pipefail
+${pathExports}
+cd "${projectRoot}"
+exec "${nodeRunner}" "${path.join(projectRoot, "scripts/start-local.cjs")}"
+`;
+}
+
+function writeCommandLauncher() {
+  fs.writeFileSync(destLauncher, launcherScript(), { mode: 0o755 });
+  spawnSync("xattr", ["-cr", destLauncher], { stdio: "ignore" });
+  console.log(`Installed launcher at ${destLauncher}`);
+}
+
+function copyIconIfAvailable(resourcesDir) {
+  const candidates = [
+    path.join(
+      projectRoot,
+      "release/mac-arm64/Rollout Studio.app/Contents/Resources/electron.icns"
+    ),
+    path.join(
+      projectRoot,
+      "node_modules/electron/dist/Electron.app/Contents/Resources/electron.icns"
+    ),
+  ];
+
+  for (const source of candidates) {
+    if (!fs.existsSync(source)) continue;
+    fs.copyFileSync(source, path.join(resourcesDir, "AppIcon.icns"));
+    return true;
   }
 
-  return null;
+  return false;
 }
 
-function writeLauncher() {
-  const script = `#!/bin/bash
-${pathPrefix}
-cd "${projectRoot}"
-if command -v npm >/dev/null 2>&1; then
-  npm start
-else
-  node scripts/start-local.cjs
-fi
-`;
+function createDesktopAppBundle() {
+  const contentsDir = path.join(destApp, "Contents");
+  const macOsDir = path.join(contentsDir, "MacOS");
+  const resourcesDir = path.join(contentsDir, "Resources");
+  const executableName = "Rollout Studio";
 
-  fs.writeFileSync(destLauncher, script, { mode: 0o755 });
-  spawnSync("xattr", ["-cr", destLauncher], { stdio: "ignore" });
-  console.log(`Installed launcher on Desktop at ${destLauncher}`);
+  if (fs.existsSync(destApp)) {
+    spawnSync("rm", ["-rf", destApp], { stdio: "inherit" });
+  }
+
+  fs.mkdirSync(macOsDir, { recursive: true });
+  fs.mkdirSync(resourcesDir, { recursive: true });
+
+  const executablePath = path.join(macOsDir, executableName);
+  fs.writeFileSync(executablePath, launcherScript(), { mode: 0o755 });
+
+  const hasIcon = copyIconIfAvailable(resourcesDir);
+  const plist = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleExecutable</key>
+  <string>${executableName}</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.rolloutstudio.app.launcher</string>
+  <key>CFBundleName</key>
+  <string>Rollout Studio</string>
+  <key>CFBundleDisplayName</key>
+  <string>Rollout Studio</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>0.1.0</string>
+  ${
+    hasIcon
+      ? `<key>CFBundleIconFile</key>
+  <string>AppIcon</string>`
+      : ""
+  }
+  <key>LSMinimumSystemVersion</key>
+  <string>11.0</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+</dict>
+</plist>`;
+
+  fs.writeFileSync(path.join(contentsDir, "Info.plist"), plist);
+  spawnSync("xattr", ["-cr", destApp], { stdio: "ignore" });
+  console.log(`Installed app at ${destApp}`);
 }
 
-writeLauncher();
-
-const builtApp = findBuiltApp(releaseDir);
-if (!builtApp) {
-  console.warn("No packaged .app found. Desktop launcher is ready to use.");
-  process.exit(0);
+function ensureRuntimeExists() {
+  if (!fs.existsSync(electronBinary)) {
+    console.error("Electron is not installed. Run npm install in the project first.");
+    process.exit(1);
+  }
 }
 
-if (fs.existsSync(destApp)) {
-  spawnSync("rm", ["-rf", destApp], { stdio: "inherit" });
-}
-
-const copy = spawnSync("ditto", [builtApp, destApp], { stdio: "inherit" });
-if (copy.status !== 0) {
-  process.exit(copy.status ?? 1);
-}
-
-spawnSync("xattr", ["-cr", destApp], { stdio: "ignore" });
-console.log(`Installed ${appName} on Desktop at ${destApp}`);
+ensureRuntimeExists();
+runBuild();
+writeCommandLauncher();
+createDesktopAppBundle();
+console.log("Desktop app and command now launch the latest build from the project.");

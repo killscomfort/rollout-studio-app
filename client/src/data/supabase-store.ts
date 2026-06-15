@@ -413,23 +413,48 @@ export async function setTaskCompleted(
   taskId: string,
   completed: boolean
 ) {
+  return updateTask(projectId, taskId, { completed });
+}
+
+export async function updateTask(
+  projectId: string,
+  taskId: string,
+  input: {
+    completed?: boolean;
+    day?: string;
+    category?: TaskCategory;
+    task?: string;
+  }
+) {
   const userId = await requireUserId();
   const supabase = getSupabase();
 
-  if (completed) {
-    const { error } = await supabase.from("task_progress").upsert({
-      project_id: projectId,
-      task_id: taskId,
-      user_id: userId,
-      completed_at: new Date().toISOString(),
-    });
-    if (error) throw new Error(error.message);
-  } else {
-    const { error } = await supabase
-      .from("task_progress")
-      .delete()
-      .eq("project_id", projectId)
-      .eq("task_id", taskId);
+  if (input.completed !== undefined) {
+    if (input.completed) {
+      const { error } = await supabase.from("task_progress").upsert({
+        project_id: projectId,
+        task_id: taskId,
+        user_id: userId,
+        completed_at: new Date().toISOString(),
+      });
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase
+        .from("task_progress")
+        .delete()
+        .eq("project_id", projectId)
+        .eq("task_id", taskId);
+      if (error) throw new Error(error.message);
+    }
+  }
+
+  const taskUpdates: Record<string, string> = {};
+  if (input.day !== undefined) taskUpdates.day = input.day;
+  if (input.category !== undefined) taskUpdates.category = input.category;
+  if (input.task !== undefined) taskUpdates.task = input.task;
+
+  if (Object.keys(taskUpdates).length > 0) {
+    const { error } = await supabase.from("tasks").update(taskUpdates).eq("id", taskId);
     if (error) throw new Error(error.message);
   }
 

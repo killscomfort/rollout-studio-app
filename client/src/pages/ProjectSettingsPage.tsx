@@ -5,7 +5,6 @@ import { api } from "../api";
 
 interface ProjectSettingsPageProps {
   projectId: string;
-  onBack: () => void;
   onPlanChanged: () => void;
   onDeleted: () => void;
 }
@@ -20,7 +19,6 @@ async function reloadProject(projectId: string) {
 
 export function ProjectSettingsPage({
   projectId,
-  onBack,
   onPlanChanged,
   onDeleted,
 }: ProjectSettingsPageProps) {
@@ -144,12 +142,6 @@ export function ProjectSettingsPage({
 
   return (
     <div>
-      <div className="top-nav">
-        <button type="button" className="button ghost" onClick={onBack}>
-          Back to rollout
-        </button>
-      </div>
-
       <div className="page-header">
         <div>
           <h1 className="page-title">Project settings</h1>

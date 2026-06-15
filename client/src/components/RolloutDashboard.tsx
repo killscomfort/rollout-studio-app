@@ -1,4 +1,5 @@
-import type { Phase, ProjectDetail, TaskCategory } from "../../../shared/types";
+import { useState } from "react";
+import type { Phase, ProjectDetail, TaskCategory, UpdateTaskInput } from "../../../shared/types";
 import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
@@ -6,8 +7,12 @@ import {
 } from "../../../shared/types";
 import {
   celebrateTaskComplete,
-  markTaskRowCelebrating,
+  TASK_CELEBRATION_MS,
 } from "../lib/celebrate-task";
+import {
+  DAY_OPTIONS,
+  TASK_CATEGORIES,
+} from "../lib/plan-utils";
 
 type CategoryFilter = "all" | TaskCategory;
 
@@ -20,6 +25,7 @@ interface RolloutDashboardProps {
   onSelectWeek: (weekIndex: number) => void;
   onCategoryFilter: (filter: CategoryFilter) => void;
   onToggleTask: (taskId: string, completed: boolean) => void;
+  onUpdateTask: (taskId: string, input: UpdateTaskInput) => Promise<void>;
 }
 
 function phaseProgress(phase: Phase) {
@@ -40,7 +46,14 @@ export function RolloutDashboard({
   onSelectWeek,
   onCategoryFilter,
   onToggleTask,
+  onUpdateTask,
 }: RolloutDashboardProps) {
+  const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [editDay, setEditDay] = useState("Mon");
+  const [editCategory, setEditCategory] = useState<TaskCategory>("admin");
+  const [editTask, setEditTask] = useState("");
+  const [savingTaskId, setSavingTaskId] = useState<string | null>(null);
   const selectedPhase =
     project.phases.find((phase) => phase.id === selectedPhaseId) ??
     project.phases[0];
@@ -62,6 +75,32 @@ export function RolloutDashboard({
   const visibleTasks = selectedWeek.tasks.filter(
     (task) => categoryFilter === "all" || task.category === categoryFilter
   );
+
+  function startEditing(task: ProjectDetail["phases"][number]["weeks"][number]["tasks"][number]) {
+    setEditingTaskId(task.id);
+    setEditDay(task.day);
+    setEditCategory(task.category);
+    setEditTask(task.task);
+  }
+
+  function cancelEditing() {
+    setEditingTaskId(null);
+  }
+
+  async function saveEditing(taskId: string) {
+    if (!editTask.trim()) return;
+    setSavingTaskId(taskId);
+    try {
+      await onUpdateTask(taskId, {
+        day: editDay,
+        category: editCategory,
+        task: editTask.trim(),
+      });
+      setEditingTaskId(null);
+    } finally {
+      setSavingTaskId(null);
+    }
+  }
 
   return (
     <>
@@ -287,49 +326,143 @@ export function RolloutDashboard({
                   <th className="day">Day</th>
                   <th>Category</th>
                   <th>Task</th>
+                  <th className="task-actions-col">Edit</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={4}>
+                    <td colSpan={5}>
                       <div className="empty-state">
                         No tasks match this filter.
                       </div>
                     </td>
                   </tr>
                 ) : (
-                  visibleTasks.map((task) => (
-                    <tr key={task.id} className={task.completed ? "done" : ""}>
+                  visibleTasks.map((task) => {
+                    const isEditing = editingTaskId === task.id;
+                    return (
+                    <tr
+                      key={task.id}
+                      className={[
+                        task.completed ? "done" : "",
+                        celebratingTaskId === task.id ? "task-complete-celebrate" : "",
+                        isEditing ? "task-editing" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       <td className="center">
                         <input
                           type="checkbox"
                           checked={task.completed}
+                          disabled={isEditing}
                           onChange={(event) => {
                             const completed = event.target.checked;
                             if (completed) {
                               celebrateTaskComplete(event.currentTarget);
-                              markTaskRowCelebrating(event.currentTarget);
+                              setCelebratingTaskId(task.id);
+                              window.setTimeout(
+                                () =>
+                                  setCelebratingTaskId((current) =>
+                                    current === task.id ? null : current
+                                  ),
+                                TASK_CELEBRATION_MS
+                              );
                             }
                             onToggleTask(task.id, completed);
                           }}
                         />
                       </td>
-                      <td className="day">{task.day}</td>
-                      <td>
-                        <span className="category-chip">
-                          <span
-                            className="swatch"
-                            style={{
-                              background: CATEGORY_COLORS[task.category],
-                            }}
-                          />
-                          {CATEGORY_LABELS[task.category]}
-                        </span>
+                      <td className="day">
+                        {isEditing ? (
+                          <select
+                            className="task-inline-select"
+                            value={editDay}
+                            onChange={(event) => setEditDay(event.target.value)}
+                          >
+                            {DAY_OPTIONS.map((day) => (
+                              <option key={day} value={day}>
+                                {day}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          task.day
+                        )}
                       </td>
-                      <td className="task-copy">{task.task}</td>
+                      <td>
+                        {isEditing ? (
+                          <select
+                            className="task-inline-select"
+                            value={editCategory}
+                            onChange={(event) =>
+                              setEditCategory(event.target.value as TaskCategory)
+                            }
+                          >
+                            {TASK_CATEGORIES.map((category) => (
+                              <option key={category} value={category}>
+                                {CATEGORY_LABELS[category]}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="category-chip">
+                            <span
+                              className="swatch"
+                              style={{
+                                background: CATEGORY_COLORS[task.category],
+                              }}
+                            />
+                            {CATEGORY_LABELS[task.category]}
+                          </span>
+                        )}
+                      </td>
+                      <td className="task-copy">
+                        {isEditing ? (
+                          <textarea
+                            className="task-inline-textarea"
+                            value={editTask}
+                            onChange={(event) => setEditTask(event.target.value)}
+                            rows={3}
+                          />
+                        ) : (
+                          task.task
+                        )}
+                      </td>
+                      <td className="task-actions-col">
+                        {isEditing ? (
+                          <div className="task-inline-actions">
+                            <button
+                              type="button"
+                              className="button primary"
+                              disabled={savingTaskId === task.id || !editTask.trim()}
+                              onClick={() => void saveEditing(task.id)}
+                            >
+                              {savingTaskId === task.id ? "Saving…" : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              className="button ghost"
+                              disabled={savingTaskId === task.id}
+                              onClick={cancelEditing}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="button ghost task-edit-button"
+                            onClick={() => startEditing(task)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

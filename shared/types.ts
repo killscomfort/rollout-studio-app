@@ -99,6 +99,13 @@ export interface UpdateProjectInput {
   funnelNote?: string;
 }
 
+export interface UpdateTaskInput {
+  completed?: boolean;
+  day?: string;
+  category?: TaskCategory;
+  task?: string;
+}
+
 export const CATEGORY_LABELS: Record<TaskCategory, string> = {
   content: "Content",
   distribute: "Distribution",

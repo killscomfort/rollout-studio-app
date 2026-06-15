@@ -347,29 +347,56 @@ export async function setTaskCompleted(
   taskId: string,
   completed: boolean
 ) {
-  const database = await getDb();
-  const ownsTask = database.tasks.some((task) => {
-    if (task.id !== taskId) return false;
-    const week = database.weeks.find((item) => item.id === task.weekId);
-    if (!week) return false;
-    const phase = database.phases.find((item) => item.id === week.phaseId);
-    return phase?.projectId === projectId;
-  });
+  return updateTask(projectId, taskId, { completed });
+}
 
-  if (!ownsTask) {
+export async function updateTask(
+  projectId: string,
+  taskId: string,
+  input: {
+    completed?: boolean;
+    day?: string;
+    category?: TaskCategory;
+    task?: string;
+  }
+) {
+  const database = await getDb();
+  const task = database.tasks.find((item) => item.id === taskId);
+  if (!task) {
     throw new Error("Task not found for project");
   }
 
-  database.progress = database.progress.filter(
-    (row) => !(row.projectId === projectId && row.taskId === taskId)
-  );
+  const week = database.weeks.find((item) => item.id === task.weekId);
+  const phase = week
+    ? database.phases.find((item) => item.id === week.phaseId)
+    : undefined;
 
-  if (completed) {
-    database.progress.push({
-      projectId,
-      taskId,
-      completedAt: new Date().toISOString(),
-    });
+  if (!phase || phase.projectId !== projectId) {
+    throw new Error("Task not found for project");
+  }
+
+  if (input.completed !== undefined) {
+    database.progress = database.progress.filter(
+      (row) => !(row.projectId === projectId && row.taskId === taskId)
+    );
+
+    if (input.completed) {
+      database.progress.push({
+        projectId,
+        taskId,
+        completedAt: new Date().toISOString(),
+      });
+    }
+  }
+
+  if (input.day !== undefined) {
+    task.day = input.day;
+  }
+  if (input.category !== undefined) {
+    task.category = input.category;
+  }
+  if (input.task !== undefined) {
+    task.task = input.task;
   }
 
   const project = database.projects.find((item) => item.id === projectId);

@@ -14,7 +14,7 @@ let mainWindow = null;
 let tray = null;
 let appIsQuitting = false;
 
-if (isPackaged && process.platform === "darwin") {
+if (isPackaged && process.platform === "darwin" && process.env.ROLLOUT_DISABLE_GPU === "1") {
   app.disableHardwareAcceleration();
 }
 
@@ -181,17 +181,17 @@ function loadWindowContent(win, hash = "") {
 
 function createWidgetWindow() {
   if (widgetWindow) {
+    widgetWindow.webContents.reload();
     widgetWindow.show();
     widgetWindow.focus();
     return widgetWindow;
   }
 
   widgetWindow = new BrowserWindow({
-    width: 360,
-    height: 520,
+    width: 380,
+    height: 680,
     minWidth: 320,
-    minHeight: 420,
-    maxWidth: 420,
+    minHeight: 480,
     show: false,
     frame: false,
     transparent: false,
@@ -300,6 +300,97 @@ function createTrayIcon() {
   );
 }
 
+function reloadWindows() {
+  if (mainWindow) {
+    mainWindow.webContents.reload();
+  }
+  if (widgetWindow) {
+    widgetWindow.webContents.reload();
+  }
+}
+
+function createApplicationMenu() {
+  if (process.platform !== "darwin") return;
+
+  const template = [
+    {
+      label: app.name,
+      submenu: [
+        { role: "about" },
+        { type: "separator" },
+        {
+          label: "Open Widget",
+          accelerator: "CmdOrCtrl+Shift+W",
+          click: () => createWidgetWindow(),
+        },
+        {
+          label: "Reload App",
+          accelerator: "CmdOrCtrl+R",
+          click: () => reloadWindows(),
+        },
+        { type: "separator" },
+        { role: "hide" },
+        { role: "hideOthers" },
+        { role: "unhide" },
+        { type: "separator" },
+        { role: "quit" },
+      ],
+    },
+    {
+      label: "Navigate",
+      submenu: [
+        {
+          label: "Back",
+          accelerator: "CmdOrCtrl+[",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.executeJavaScript(
+                "window.dispatchEvent(new CustomEvent('rollout-nav-back'));"
+              );
+            }
+          },
+        },
+        {
+          label: "Forward",
+          accelerator: "CmdOrCtrl+]",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.executeJavaScript(
+                "window.dispatchEvent(new CustomEvent('rollout-nav-forward'));"
+              );
+            }
+          },
+        },
+        { type: "separator" },
+        {
+          label: "All Projects",
+          accelerator: "CmdOrCtrl+1",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.executeJavaScript(
+                "window.dispatchEvent(new CustomEvent('rollout-nav-projects'));"
+              );
+            }
+          },
+        },
+      ],
+    },
+    {
+      label: "View",
+      submenu: [
+        { role: "toggleDevTools" },
+        { role: "reload" },
+        { type: "separator" },
+        { role: "resetZoom" },
+        { role: "zoomIn" },
+        { role: "zoomOut" },
+      ],
+    },
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 function createTray() {
   const icon = createTrayIcon();
   tray = new Tray(icon);
@@ -358,6 +449,10 @@ function registerIpc() {
     return next;
   });
 
+  ipcMain.handle("reload-app", () => {
+    reloadWindows();
+  });
+
   ipcMain.handle("quit-app", () => {
     appIsQuitting = true;
     app.quit();
@@ -379,6 +474,7 @@ app.on("before-quit", () => {
 
 app.whenReady().then(async () => {
   registerIpc();
+  createApplicationMenu();
 
   try {
     await startBackend();

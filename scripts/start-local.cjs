@@ -63,14 +63,45 @@ function runBuild() {
   });
 }
 
-if (!fs.existsSync(path.join(projectRoot, "client/dist/index.html"))) {
+function newestMtime(targetPath) {
+  if (!fs.existsSync(targetPath)) return 0;
+  const stat = fs.statSync(targetPath);
+  if (!stat.isDirectory()) return stat.mtimeMs;
+  return fs.readdirSync(targetPath, { withFileTypes: true }).reduce((latest, entry) => {
+    return Math.max(latest, newestMtime(path.join(targetPath, entry.name)));
+  }, 0);
+}
+
+function needsBuild() {
+  if (process.env.ROLLOUT_FORCE_BUILD === "1") return true;
+  const distIndex = path.join(projectRoot, "client/dist/index.html");
+  if (!fs.existsSync(distIndex)) return true;
+  const distTime = fs.statSync(distIndex).mtimeMs;
+  const sourceRoots = [
+    path.join(projectRoot, "client/src"),
+    path.join(projectRoot, "electron"),
+    path.join(projectRoot, "shared"),
+    path.join(projectRoot, "server/src"),
+  ];
+  return sourceRoots.some((sourceRoot) => newestMtime(sourceRoot) > distTime);
+}
+
+if (needsBuild()) {
   runBuild();
 }
+
+const launchEnv = { ...process.env, ROLLOUT_LAUNCHED_FROM_DESKTOP: "1" };
+delete launchEnv.ELECTRON_RUN_AS_NODE;
 
 const launch = spawnSync(electronApp, ["."], {
   cwd: projectRoot,
   stdio: "inherit",
-  env: process.env,
+  env: launchEnv,
 });
 
-process.exit(launch.status ?? 0);
+if ((launch.status ?? 1) !== 0) {
+  console.error("Rollout Studio failed to launch.");
+  process.exit(launch.status ?? 1);
+}
+
+process.exit(0);

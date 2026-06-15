@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import { initAppData, isSupabaseConfigured, onAuthStateChange, subscribeToCloudChanges } from "./api";
 import { getSession } from "./lib/supabase";
+import { AppNavBar } from "./components/AppNavBar";
 import { AuthPage } from "./pages/AuthPage";
 import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
@@ -10,6 +11,11 @@ import { WidgetPanel } from "./pages/WidgetPanel";
 import { WidgetSkyBackground } from "./components/WidgetSkyBackground";
 
 type View = "list" | "workspace" | "settings";
+
+interface NavEntry {
+  view: View;
+  projectId: string | null;
+}
 
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
 
@@ -20,15 +26,62 @@ function isWidgetMode() {
   return window.location.hash === "#widget";
 }
 
+function navTitle(view: View, projectTitle: string) {
+  if (view === "list") return "Rollout Studio";
+  if (view === "settings") return "Project settings";
+  return projectTitle || "Rollout";
+}
+
+function navSubtitle(view: View, projectTitle: string) {
+  if (view === "list") return "Your projects";
+  if (view === "settings") return projectTitle || "Adjust branding and plan";
+  return "Release checklist";
+}
+
 export default function App() {
   const widgetMode = isWidgetMode();
   const [signedIn, setSignedIn] = useState<boolean | null>(
     isSupabaseConfigured() ? null : true
   );
-  const [view, setView] = useState<View>("list");
-  const [projectId, setProjectId] = useState<string | null>(null);
+  const [navState, setNavState] = useState<{ history: NavEntry[]; index: number }>({
+    history: [{ view: "list", projectId: null }],
+    index: 0,
+  });
+  const [projectTitle, setProjectTitle] = useState("");
   const [workspaceKey, setWorkspaceKey] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const currentNav = navState.history[navState.index] ?? { view: "list", projectId: null };
+  const view = currentNav.view;
+  const projectId = currentNav.projectId;
+  const canGoBack = navState.index > 0;
+  const canGoForward = navState.index < navState.history.length - 1;
+
+  function navigate(entry: NavEntry) {
+    setNavState((prev) => {
+      const history = [...prev.history.slice(0, prev.index + 1), entry];
+      return { history, index: history.length - 1 };
+    });
+  }
+
+  function goBack() {
+    setNavState((prev) =>
+      prev.index > 0 ? { ...prev, index: prev.index - 1 } : prev
+    );
+  }
+
+  function goForward() {
+    setNavState((prev) =>
+      prev.index < prev.history.length - 1
+        ? { ...prev, index: prev.index + 1 }
+        : prev
+    );
+  }
+
+  function openProject(id: string) {
+    localStorage.setItem(ACTIVE_PROJECT_KEY, id);
+    navigate({ view: "workspace", projectId: id });
+  }
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -76,15 +129,49 @@ export default function App() {
     function openFromHash() {
       const match = window.location.hash.match(/^#open\/(.+)$/);
       if (!match) return;
-      localStorage.setItem(ACTIVE_PROJECT_KEY, match[1]);
-      setProjectId(match[1]);
-      setView("workspace");
+      openProject(match[1]);
       window.history.replaceState(null, "", window.location.pathname);
     }
 
     openFromHash();
     window.addEventListener("hashchange", openFromHash);
     return () => window.removeEventListener("hashchange", openFromHash);
+  }, [widgetMode]);
+
+  useEffect(() => {
+    if (widgetMode) return;
+
+    function handleBack() {
+      setNavState((prev) =>
+        prev.index > 0 ? { ...prev, index: prev.index - 1 } : prev
+      );
+    }
+
+    function handleForward() {
+      setNavState((prev) =>
+        prev.index < prev.history.length - 1
+          ? { ...prev, index: prev.index + 1 }
+          : prev
+      );
+    }
+
+    function handleProjects() {
+      setProjectTitle("");
+      setNavState({
+        history: [{ view: "list", projectId: null }],
+        index: 0,
+      });
+    }
+
+    window.addEventListener("rollout-nav-back", handleBack);
+    window.addEventListener("rollout-nav-forward", handleForward);
+    window.addEventListener("rollout-nav-projects", handleProjects);
+
+    return () => {
+      window.removeEventListener("rollout-nav-back", handleBack);
+      window.removeEventListener("rollout-nav-forward", handleForward);
+      window.removeEventListener("rollout-nav-projects", handleProjects);
+    };
   }, [widgetMode]);
 
   const content = useMemo(() => {
@@ -96,11 +183,7 @@ export default function App() {
       return (
         <ProjectListPage
           key={refreshKey}
-          onOpenProject={(id) => {
-            localStorage.setItem(ACTIVE_PROJECT_KEY, id);
-            setProjectId(id);
-            setView("workspace");
-          }}
+          onOpenProject={openProject}
         />
       );
     }
@@ -109,11 +192,7 @@ export default function App() {
       return (
         <ProjectListPage
           key={refreshKey}
-          onOpenProject={(id) => {
-            localStorage.setItem(ACTIVE_PROJECT_KEY, id);
-            setProjectId(id);
-            setView("workspace");
-          }}
+          onOpenProject={openProject}
         />
       );
     }
@@ -122,12 +201,11 @@ export default function App() {
       return (
         <ProjectSettingsPage
           projectId={projectId}
-          onBack={() => setView("workspace")}
           onPlanChanged={() => setWorkspaceKey((value) => value + 1)}
           onDeleted={() => {
             localStorage.removeItem(ACTIVE_PROJECT_KEY);
-            setProjectId(null);
-            setView("list");
+            setProjectTitle("");
+            navigate({ view: "list", projectId: null });
           }}
         />
       );
@@ -137,11 +215,7 @@ export default function App() {
       <ProjectWorkspace
         key={workspaceKey}
         projectId={projectId}
-        onBack={() => {
-          setView("list");
-          setProjectId(null);
-        }}
-        onOpenSettings={() => setView("settings")}
+        onProjectLoaded={(project) => setProjectTitle(project.name)}
       />
     );
   }, [projectId, view, workspaceKey, refreshKey, widgetMode]);
@@ -201,6 +275,29 @@ export default function App() {
   }
 
   return (
-    <div className={widgetMode ? "widget-root" : "app-shell"}>{content}</div>
+    <div className={widgetMode ? "widget-root" : "app-shell"}>
+      {!widgetMode ? (
+        <AppNavBar
+          title={navTitle(view, projectTitle)}
+          subtitle={navSubtitle(view, projectTitle)}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          onBack={goBack}
+          onForward={goForward}
+          actions={
+            view === "workspace" && projectId ? (
+              <button
+                type="button"
+                className="button"
+                onClick={() => navigate({ view: "settings", projectId })}
+              >
+                Project settings
+              </button>
+            ) : null
+          }
+        />
+      ) : null}
+      {content}
+    </div>
   );
 }

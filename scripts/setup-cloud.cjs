@@ -24,9 +24,21 @@ async function checkSupabase() {
   if (!cloud) {
     console.log("Cloud backend not configured.");
     console.log(`Copy ${path.join(root, ".env.example")} to .env and add Supabase keys.`);
+    const url = env.VITE_SUPABASE_URL?.trim();
+    if (url && !url.includes("your-project")) {
+      const ref = url.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+      if (ref) {
+        console.log("");
+        console.log("Your project URL is set. Still need the anon key:");
+        console.log(`  https://supabase.com/dashboard/project/${ref}/settings/api`);
+      }
+    }
     process.exitCode = 1;
     return;
   }
+
+  const ref = env.VITE_SUPABASE_URL.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+  const dash = ref ? `https://supabase.com/dashboard/project/${ref}` : null;
 
   const response = await fetch(`${env.VITE_SUPABASE_URL}/auth/v1/health`, {
     headers: {
@@ -41,11 +53,45 @@ async function checkSupabase() {
   }
 
   console.log("Supabase connection OK.");
-  console.log("Next steps:");
-  console.log("1. Open Supabase SQL Editor");
-  console.log("2. Run supabase/migrations/001_rollout_studio.sql");
-  console.log("3. Enable Email auth in Authentication → Providers");
-  console.log("4. Share .env with anyone using this app build");
+
+  let schemaReady = false;
+  try {
+    const probe = await fetch(`${env.VITE_SUPABASE_URL}/rest/v1/projects?select=id&limit=1`, {
+      headers: {
+        apikey: env.VITE_SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${env.VITE_SUPABASE_ANON_KEY}`,
+      },
+    });
+    schemaReady = probe.ok;
+    if (!schemaReady && probe.status === 404) {
+      console.log("");
+      console.log("Database schema not found yet — run the migration SQL first.");
+    }
+  } catch {
+    // ignore probe errors
+  }
+
+  console.log("");
+  if (schemaReady) {
+    console.log("Schema looks ready (projects table reachable).");
+  } else {
+    console.log("One-time setup in Supabase:");
+    if (dash) {
+      console.log(`1. SQL Editor → paste and run supabase/migrations/001_rollout_studio.sql`);
+      console.log(`   ${dash}/sql/new`);
+      console.log(`2. Authentication → Providers → enable Email`);
+      console.log(`   ${dash}/auth/providers`);
+      console.log(`3. (Recommended) Turn off “Confirm email” for easier sign-up, or leave on`);
+      console.log(`   ${dash}/auth/providers`);
+    } else {
+      console.log("1. Run supabase/migrations/001_rollout_studio.sql in SQL Editor");
+      console.log("2. Enable Email auth under Authentication → Providers");
+    }
+  }
+
+  console.log("");
+  console.log("Privacy contact for the public app: killscomfort@gmail.com");
+  console.log("Share VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY with app users (anon key is public-safe with RLS).");
 }
 
 const command = process.argv[2];

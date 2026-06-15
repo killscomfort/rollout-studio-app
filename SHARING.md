@@ -2,13 +2,26 @@
 
 Rollout Studio is shareable when you connect **one Supabase project** as the backend.
 
+## Hosted backend for Rollout Studio (public release)
+
+The shared cloud project for the public app:
+
+- **Dashboard:** [Supabase project fwsmllrlevehhxdtzzkk](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk)
+- **API URL:** `https://fwsmllrlevehhxdtzzkk.supabase.co`
+- **Anon key:** Settings → API → `anon` `public` key (never commit the full `.env` to git)
+
+Installers copy `.env.example` → `.env` and paste the anon key. Each user still gets a private account; data is isolated per user via Row Level Security.
+
+**Privacy contact:** killscomfort@gmail.com — see [PRIVACY.md](./PRIVACY.md)
+
 ## One-time backend setup (you do this once)
 
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Run `supabase/migrations/001_rollout_studio.sql` in **SQL Editor**
-3. Enable **Email** auth under **Authentication → Providers**
-4. Copy `.env.example` → `.env` and paste your **Project URL** + **anon key**
-5. Verify:
+For project **fwsmllrlevehhxdtzzkk**:
+
+1. [Open API settings](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/settings/api) → copy the **anon public** key into `.env` as `VITE_SUPABASE_ANON_KEY`
+2. [SQL Editor](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/sql/new) → paste and run `supabase/migrations/001_rollout_studio.sql`
+3. [Authentication → Providers](https://supabase.com/dashboard/project/fwsmllrlevehhxdtzzkk/auth/providers) → enable **Email**
+4. Verify locally:
 
 ```bash
 npm run setup:cloud

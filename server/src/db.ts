@@ -314,6 +314,20 @@ export function setTaskCompleted(
   taskId: string,
   completed: boolean
 ) {
+  updateTask(db, projectId, taskId, { completed });
+}
+
+export function updateTask(
+  db: Database.Database,
+  projectId: string,
+  taskId: string,
+  input: {
+    completed?: boolean;
+    day?: string;
+    category?: string;
+    task?: string;
+  }
+) {
   const ownsTask = db
     .prepare(
       `SELECT 1 FROM tasks t
@@ -327,18 +341,43 @@ export function setTaskCompleted(
     throw new Error("Task not found for project");
   }
 
-  if (completed) {
-    db.prepare(
-      `INSERT INTO task_progress (project_id, task_id, completed, completed_at)
-       VALUES (?, ?, 1, ?)
-       ON CONFLICT(project_id, task_id) DO UPDATE SET
-         completed = 1,
-         completed_at = excluded.completed_at`
-    ).run(projectId, taskId, new Date().toISOString());
-  } else {
-    db.prepare(
-      "DELETE FROM task_progress WHERE project_id = ? AND task_id = ?"
-    ).run(projectId, taskId);
+  if (input.completed !== undefined) {
+    if (input.completed) {
+      db.prepare(
+        `INSERT INTO task_progress (project_id, task_id, completed, completed_at)
+         VALUES (?, ?, 1, ?)
+         ON CONFLICT(project_id, task_id) DO UPDATE SET
+           completed = 1,
+           completed_at = excluded.completed_at`
+      ).run(projectId, taskId, new Date().toISOString());
+    } else {
+      db.prepare(
+        "DELETE FROM task_progress WHERE project_id = ? AND task_id = ?"
+      ).run(projectId, taskId);
+    }
+  }
+
+  const updates: string[] = [];
+  const params: Array<string> = [];
+
+  if (input.day !== undefined) {
+    updates.push("day = ?");
+    params.push(input.day);
+  }
+  if (input.category !== undefined) {
+    updates.push("category = ?");
+    params.push(input.category);
+  }
+  if (input.task !== undefined) {
+    updates.push("task = ?");
+    params.push(input.task);
+  }
+
+  if (updates.length > 0) {
+    db.prepare(`UPDATE tasks SET ${updates.join(", ")} WHERE id = ?`).run(
+      ...params,
+      taskId
+    );
   }
 
   db.prepare("UPDATE projects SET updated_at = ? WHERE id = ?").run(

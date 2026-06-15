@@ -22,7 +22,7 @@
     "start:local": "node scripts/run-build.cjs && electron .",
     "start:cloud": "node scripts/run-build.cjs && electron .",
     "pack:mac": "node scripts/run-build.cjs && electron-builder --mac dir",
-    "apply:desktop": "npm run pack:mac && node scripts/install-desktop.cjs",
+    "apply:desktop": "node scripts/install-desktop.cjs",
     "build:mobile": "VITE_API_BASE= vite build --config client/vite.config.ts",
     "build:ios": "npm run build:mobile && npx cap sync ios",
     "open:ios": "npx cap open ios",

@@ -1,22 +1,19 @@
 import { useEffect, useState } from "react";
-import type { ProjectDetail } from "../../../shared/types";
+import type { ProjectDetail, UpdateTaskInput } from "../../../shared/types";
 import { api } from "../api";
 import {
   RolloutDashboard,
   type CategoryFilter,
 } from "../components/RolloutDashboard";
-import { OpenWidgetButton } from "../components/OpenWidgetButton";
 
 interface ProjectWorkspaceProps {
   projectId: string;
-  onBack: () => void;
-  onOpenSettings: () => void;
+  onProjectLoaded: (project: ProjectDetail) => void;
 }
 
 export function ProjectWorkspace({
   projectId,
-  onBack,
-  onOpenSettings,
+  onProjectLoaded,
 }: ProjectWorkspaceProps) {
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [selectedPhaseId, setSelectedPhaseId] = useState("");
@@ -35,6 +32,7 @@ export function ProjectWorkspace({
         return;
       }
       setProject(next);
+      onProjectLoaded(next);
       setSelectedPhaseId((current) => current || next.phases[0]?.id || "");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load project");
@@ -51,8 +49,20 @@ export function ProjectWorkspace({
     try {
       const next = await api.setTaskCompleted(projectId, taskId, completed);
       setProject(next);
+      onProjectLoaded(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update task");
+    }
+  }
+
+  async function handleUpdateTask(taskId: string, input: UpdateTaskInput) {
+    try {
+      const next = await api.updateTask(projectId, taskId, input);
+      setProject(next);
+      onProjectLoaded(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save task");
+      throw err;
     }
   }
 
@@ -61,30 +71,12 @@ export function ProjectWorkspace({
   }
 
   if (error || !project) {
-    return (
-      <div>
-        <div className="top-nav">
-          <button type="button" className="button ghost" onClick={onBack}>
-            Back to projects
-          </button>
-        </div>
-        <div className="callout">{error ?? "Project not found"}</div>
-      </div>
-    );
+    return <div className="callout">{error ?? "Project not found"}</div>;
   }
 
   return (
     <div>
-      <div className="top-nav">
-        <button type="button" className="button ghost" onClick={onBack}>
-          All projects
-        </button>
-        <button type="button" className="button" onClick={onOpenSettings}>
-          Project settings
-        </button>
-        <OpenWidgetButton />
-      </div>
-
+      {error ? <div className="callout">{error}</div> : null}
       <RolloutDashboard
         project={project}
         selectedPhaseId={selectedPhaseId}
@@ -97,6 +89,7 @@ export function ProjectWorkspace({
         onSelectWeek={setSelectedWeekIndex}
         onCategoryFilter={setCategoryFilter}
         onToggleTask={handleToggleTask}
+        onUpdateTask={handleUpdateTask}
       />
     </div>
   );

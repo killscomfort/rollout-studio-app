@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { CreateProjectInput, ProjectSummary } from "../../../shared/types";
 import { SyncControls } from "../components/SyncControls";
-import { OpenWidgetButton } from "../components/OpenWidgetButton";
 import { AccountControls } from "../components/AccountControls";
+import { AppFooter } from "../components/AppFooter";
 import { isSupabaseConfigured } from "../api";
 import { api } from "../api";
 
@@ -18,7 +18,7 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [templateSlug, setTemplateSlug] = useState("blank");
+  const [templateSlug, setTemplateSlug] = useState("fuckdahaters");
 
   async function refresh() {
     setLoading(true);
@@ -71,7 +71,6 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
         </div>
         <div className="page-header-actions">
           {isSupabaseConfigured() ? <AccountControls /> : null}
-          <OpenWidgetButton />
         </div>
       </div>
 
@@ -140,6 +139,7 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
           })}
         </div>
       )}
+      <AppFooter />
     </div>
   );
 }
