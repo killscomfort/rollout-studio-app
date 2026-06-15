@@ -58,6 +58,33 @@ Rollout tasks can be exported as **Apple Calendar events** with alerts (standard
 
 Each upcoming task becomes a 9:00 AM event with a reminder before it (default 30 minutes). Completed tasks are skipped. Re-export after plan changes to refresh reminders.
 
+### Mac: automatic iCloud sync + Pushcut (from the zip spec)
+
+For hands-free sync while your Mac is awake:
+
+1. Create calendar **KillsComfort Rollout** in Calendar.app (iCloud account)
+2. [Generate an app-specific password](https://appleid.apple.com) for iCloud CalDAV
+3. Add to `.env`: `ICLOUD_APPLE_ID`, `ICLOUD_APP_PASSWORD`, optional Pushcut keys
+4. Set **release date** in Project settings for your rollout
+5. Run:
+
+```bash
+npm run sync:icloud          # push events to iCloud (iPhone gets native Calendar alerts)
+npm run push:nudges          # fire due Pushcut nudges now
+npm run sync:notifications   # both
+```
+
+Optional timer (every 10 min):
+
+```bash
+chmod +x scripts/rollout-notifications/run.sh
+cp scripts/rollout-notifications/com.killscomfort.rollout.plist ~/Library/LaunchAgents/
+# Edit the plist path if your repo lives elsewhere, then:
+launchctl load ~/Library/LaunchAgents/com.killscomfort.rollout.plist
+```
+
+**Pushcut (optional):** Install Pushcut on iPhone, create notification **RolloutNudge**, add `PUSHCUT_API_KEY` to `.env`, set `ROLLOUT_PUSH_BY_DEFAULT=1`.
+
 ## Local-only (no cloud)
 
 Leave Supabase vars empty in `.env`. The app works on one Mac with SQLite. Use **Export/Import sync file** to move data manually to iPhone.

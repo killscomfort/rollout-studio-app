@@ -12,3 +12,4 @@ ios/DerivedData/
 *.log
 .env
 .env.local
+.rollout-push-state.json
