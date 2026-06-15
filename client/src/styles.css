@@ -780,7 +780,6 @@ body.widget-mode #root {
 .widget-body,
 .widget-progress-block,
 .widget-section-label,
-.widget-undo-bar,
 .widget-task-list,
 .widget-task-row,
 .widget-icon-button,
@@ -974,45 +973,6 @@ body.widget-mode #root {
 .widget-footer {
   margin-top: auto;
   flex-shrink: 0;
-}
-
-.widget-undo-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 2px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(15, 17, 21, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(15, 17, 21, 0.18);
-  flex-shrink: 0;
-}
-
-.widget-undo-text {
-  font-size: 13px;
-  color: #e8eaed;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.widget-undo-button {
-  flex-shrink: 0;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #0f1115;
-  background: #e8c030;
-  cursor: pointer;
-}
-
-.widget-undo-button:hover {
-  background: #f0d050;
 }
 
 .widget-open-full {
