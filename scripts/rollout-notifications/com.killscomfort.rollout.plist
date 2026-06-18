@@ -8,7 +8,7 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/toejam808/Projects/rollout-studio/scripts/rollout-notifications/run.sh</string>
+    <string>/Users/toejam808/Desktop/KillsComfort/KillsAi/rollout-studio/scripts/rollout-notifications/run.sh</string>
   </array>
 
   <key>StartInterval</key>
