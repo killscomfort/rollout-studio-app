@@ -26,6 +26,7 @@ import {
   personalizeTemplateForNewProject,
 } from "../../../shared/template-personalize";
 import { getSupabase, requireUserId } from "../lib/supabase";
+import { trackUserActivity } from "../lib/user-tracking";
 import { TEMPLATES } from "./templates";
 
 interface ProjectRow {
@@ -318,6 +319,7 @@ async function insertPlan(userId: string, projectId: string, template: ProjectTe
 
 export async function initSupabaseStore() {
   const userId = await requireUserId();
+  await trackUserActivity("session_started");
   const supabase = getSupabase();
   const { count, error } = await supabase
     .from("projects")
@@ -379,6 +381,11 @@ export async function createProjectFromTemplate(
   if (!project) {
     throw new Error("Failed to create project");
   }
+  await trackUserActivity("project_created", {
+    projectId: project.id,
+    projectName: project.name,
+    templateSlug: input.templateSlug ?? DEFAULT_TEMPLATE_SLUG,
+  });
   return project;
 }
 
@@ -435,6 +442,7 @@ export async function deleteProject(id: string) {
   const supabase = getSupabase();
   const { error } = await supabase.from("projects").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  await trackUserActivity("project_deleted", { projectId: id });
 }
 
 export async function setTaskCompleted(
@@ -467,6 +475,7 @@ export async function updateTask(
         completed_at: new Date().toISOString(),
       });
       if (error) throw new Error(error.message);
+      await trackUserActivity("task_completed", { projectId, taskId });
     } else {
       const { error } = await supabase
         .from("task_progress")
@@ -474,6 +483,7 @@ export async function updateTask(
         .eq("project_id", projectId)
         .eq("task_id", taskId);
       if (error) throw new Error(error.message);
+      await trackUserActivity("task_uncompleted", { projectId, taskId });
     }
   }
 
@@ -672,6 +682,7 @@ export async function signIn(email: string, password: string) {
   const { error } = await getSupabase().auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
   await initSupabaseStore();
+  await trackUserActivity("signed_in");
 }
 
 export async function signUp(email: string, password: string) {
@@ -679,6 +690,7 @@ export async function signUp(email: string, password: string) {
   if (error) throw new Error(error.message);
   if (data.session) {
     await initSupabaseStore();
+    await trackUserActivity("signed_up");
   }
 }
 

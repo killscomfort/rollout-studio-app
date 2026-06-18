@@ -122,6 +122,7 @@ async function main() {
     "001_rollout_studio.sql",
     "002_release_date.sql",
     "003_notification_schedule.sql",
+    "004_user_tracking.sql",
   ]) {
     await runMigration(file);
   }

@@ -83,6 +83,8 @@ async function checkSupabase() {
       console.log(`   ${dash}/sql/new`);
       console.log(`   → supabase/migrations/001_rollout_studio.sql`);
       console.log(`   → supabase/migrations/002_release_date.sql`);
+      console.log(`   → supabase/migrations/003_notification_schedule.sql`);
+      console.log(`   → supabase/migrations/004_user_tracking.sql`);
       console.log(`2. Authentication → Providers → enable Email`);
       console.log(`   ${dash}/auth/providers`);
       console.log(`3. (Recommended) Turn off “Confirm email” for easier sign-up, or leave on`);

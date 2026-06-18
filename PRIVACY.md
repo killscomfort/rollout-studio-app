@@ -11,6 +11,7 @@ When you create an account and use Rollout Studio with cloud sync:
 
 - **Account email** — used to sign in (stored by Supabase Auth)
 - **Your rollout data** — project names, task lists, completion progress, and settings you enter in the app
+- **Usage signals** (cloud mode only) — sign-in time, last app open, platform (Mac/iPhone/web), and coarse in-app events such as project created or task completed. Used to operate and improve the app, not for advertising.
 
 We do not sell your data. We do not use your data for advertising.
 

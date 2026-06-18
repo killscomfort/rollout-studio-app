@@ -19,7 +19,8 @@ import {
   type NotificationSchedule,
   type Weekday,
 } from "../../../shared/notification-schedule";
-import { api } from "../api";
+import { api, useCloudBackend } from "../api";
+import { trackUserActivity } from "../lib/user-tracking";
 
 interface CalendarSyncPanelProps {
   project: ProjectDetail;
@@ -212,6 +213,12 @@ export function CalendarSyncPanel({
       });
 
       await shareCalendarFile(`${slugifyFilename(project.name)}-rollout.ics`, ics);
+      if (useCloudBackend()) {
+        await trackUserActivity("calendar_exported", {
+          projectId: project.id,
+          eventCount: events.length,
+        });
+      }
       setMessage(
         isNative
           ? `Shared ${events.length} calendar events. Choose a calendar in the share sheet — iPhone will notify you from Calendar alerts.`

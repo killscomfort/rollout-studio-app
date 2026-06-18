@@ -17,6 +17,7 @@
     "dev:electron:cloud": "wait-on http://127.0.0.1:5173 && ROLLOUT_USE_VITE=1 ROLLOUT_USE_CLOUD=1 electron .",
     "setup:cloud": "node scripts/setup-cloud.cjs check",
     "setup:supabase": "node scripts/supabase-bootstrap.cjs",
+    "user:stats": "node scripts/user-stats.cjs",
     "build": "node scripts/run-build.cjs",
     "build:client": "VITE_ROLLOUT_BACKEND=cloud vite build --config client/vite.config.ts",
     "build:client:local": "VITE_ROLLOUT_BACKEND=local VITE_API_BASE=http://127.0.0.1:3847 vite build --config client/vite.config.ts",
