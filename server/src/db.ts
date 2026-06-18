@@ -18,6 +18,10 @@ import type {
 import { suggestReleaseDate } from "../../shared/calendar";
 import { parseNotificationSchedule } from "../../shared/notification-schedule";
 import {
+  parseGrowthData,
+  serializeGrowthData,
+} from "../../shared/growth/store";
+import {
   countTemplateWeeks,
   DEFAULT_TEMPLATE_SLUG,
   personalizeTemplateForNewProject,
@@ -93,6 +97,11 @@ export function initDb(db: Database.Database) {
   }
   if (!columnNames.has("notification_schedule")) {
     db.exec("ALTER TABLE projects ADD COLUMN notification_schedule TEXT");
+  }
+  if (!columnNames.has("growth_data")) {
+    db.exec(
+      `ALTER TABLE projects ADD COLUMN growth_data TEXT NOT NULL DEFAULT '{"playlistSubmissions":[],"labelSubmissions":[],"socialPosts":[]}'`
+    );
   }
 
   const count = db.prepare("SELECT COUNT(*) AS c FROM projects").get() as { c: number };
@@ -315,7 +324,7 @@ export function getProject(db: Database.Database, id: string): ProjectDetail | n
     ),
   });
 
-  return { ...summary, phases: mappedPhases };
+  return { ...summary, phases: mappedPhases, growthData: parseGrowthData(project.growth_data) };
 }
 
 export function updateProject(
@@ -329,7 +338,7 @@ export function updateProject(
   db.prepare(
     `UPDATE projects
      SET name = ?, tagline = ?, booking_url = ?, funnel_note = ?, release_date = ?,
-         notification_schedule = ?, updated_at = ?
+         notification_schedule = ?, growth_data = ?, updated_at = ?
      WHERE id = ?`
   ).run(
     input.name ?? existing.name,
@@ -346,6 +355,9 @@ export function updateProject(
       : existing.notificationSchedule
         ? JSON.stringify(existing.notificationSchedule)
         : null,
+    input.growthData !== undefined
+      ? serializeGrowthData(input.growthData)
+      : serializeGrowthData(existing.growthData),
     new Date().toISOString(),
     id
   );

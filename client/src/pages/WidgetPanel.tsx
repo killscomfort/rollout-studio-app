@@ -9,7 +9,7 @@ import {
 } from "../lib/celebrate-task";
 import { SkyBackground } from "../components/SkyBackground";
 
-const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
+import { ACTIVE_PROJECT_KEY } from "../lib/active-project";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 function todayLabel() {

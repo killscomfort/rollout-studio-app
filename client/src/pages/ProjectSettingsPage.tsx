@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ProjectDetail, ProjectTemplate } from "../../../shared/types";
 import { PlanEditor } from "../components/PlanEditor";
 import { CalendarSyncPanel } from "../components/CalendarSyncPanel";
+import { GrowthHubPanel } from "../components/GrowthHubPanel";
 import { DEFAULT_TEMPLATE_SLUG } from "../../../shared/template-personalize";
 import { api } from "../api";
 
@@ -204,6 +205,15 @@ export function ProjectSettingsPage({
             setProject(updated);
             setReleaseDate(updated.releaseDate ?? "");
           }}
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <GrowthHubPanel
+          project={project}
+          onProjectUpdated={setProject}
+          onError={setError}
+          onMessage={setMessage}
         />
       </div>
 

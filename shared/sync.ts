@@ -1,4 +1,5 @@
 import type { NotificationSchedule } from "./notification-schedule";
+import type { ProjectGrowthData } from "./growth/types";
 
 export const SYNC_VERSION = 1;
 
@@ -11,6 +12,7 @@ export interface SyncProject {
   funnelNote: string;
   releaseDate: string | null;
   notificationSchedule: NotificationSchedule | null;
+  growthData?: ProjectGrowthData;
   createdAt: string;
   updatedAt: string;
 }

@@ -1,4 +1,5 @@
 import type { NotificationSchedule } from "./notification-schedule";
+import type { ProjectGrowthData } from "./growth/types";
 
 export type TaskCategory =
   | "content"
@@ -85,6 +86,7 @@ export interface Phase {
 
 export interface ProjectDetail extends ProjectSummary {
   phases: Phase[];
+  growthData: ProjectGrowthData;
 }
 
 export interface CreateProjectInput {
@@ -103,6 +105,7 @@ export interface UpdateProjectInput {
   funnelNote?: string;
   releaseDate?: string | null;
   notificationSchedule?: NotificationSchedule | null;
+  growthData?: ProjectGrowthData;
 }
 
 export interface UpdateTaskInput {

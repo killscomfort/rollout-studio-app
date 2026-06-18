@@ -20,6 +20,7 @@ import {
 } from "../../../shared/sync";
 import { suggestReleaseDate } from "../../../shared/calendar";
 import { parseNotificationSchedule } from "../../../shared/notification-schedule";
+import { parseGrowthData, serializeGrowthData } from "../../../shared/growth/store";
 import {
   countTemplateWeeks,
   DEFAULT_TEMPLATE_SLUG,
@@ -39,6 +40,7 @@ interface ProjectRow {
   funnel_note: string;
   release_date: string | null;
   notification_schedule: unknown;
+  growth_data: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -163,6 +165,7 @@ async function fetchUserData(userId: string): Promise<SyncData> {
       funnelNote: project.funnel_note,
       releaseDate: project.release_date?.trim() || null,
       notificationSchedule: parseNotificationSchedule(project.notification_schedule),
+      growthData: parseGrowthData(project.growth_data),
       createdAt: project.created_at,
       updatedAt: project.updated_at,
     })),
@@ -270,7 +273,7 @@ function buildProjectDetail(
       };
     });
 
-  return { ...mapSummary(project, data), phases };
+  return { ...mapSummary(project, data), phases, growthData: project.growthData ?? parseGrowthData(null) };
 }
 
 async function insertPlan(userId: string, projectId: string, template: ProjectTemplate) {
@@ -430,6 +433,10 @@ export async function updateProject(
         input.notificationSchedule !== undefined
           ? input.notificationSchedule
           : existing.notificationSchedule,
+      growth_data:
+        input.growthData !== undefined
+          ? serializeGrowthData(input.growthData)
+          : serializeGrowthData(existing.growthData),
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -604,6 +611,9 @@ async function replaceAllData(userId: string, data: SyncData) {
       funnel_note: project.funnelNote,
       release_date: project.releaseDate,
       notification_schedule: project.notificationSchedule,
+      growth_data: project.growthData
+        ? serializeGrowthData(project.growthData)
+        : serializeGrowthData(parseGrowthData(null)),
       created_at: project.createdAt,
       updated_at: project.updatedAt,
     });
@@ -697,6 +707,22 @@ export async function signUp(email: string, password: string) {
 export async function signOut() {
   const { error } = await getSupabase().auth.signOut();
   if (error) throw new Error(error.message);
+}
+
+export async function fetchAdminStats() {
+  const supabase = getSupabase();
+  const [usersResult, eventsResult] = await Promise.all([
+    supabase.rpc("admin_user_summary"),
+    supabase.rpc("admin_event_summary"),
+  ]);
+
+  if (usersResult.error) throw new Error(usersResult.error.message);
+  if (eventsResult.error) throw new Error(eventsResult.error.message);
+
+  return {
+    users: usersResult.data ?? [],
+    events: eventsResult.data ?? [],
+  };
 }
 
 export function onAuthStateChange(callback: (signedIn: boolean) => void) {

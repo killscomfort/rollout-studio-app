@@ -259,3 +259,22 @@ export function skyBottomColor(variant: SkyVariant): string {
       return "#cce9fb";
   }
 }
+
+/** Whether sky-level text should use light ink (dark weather backdrops). */
+export function skyContrastMode(variant: SkyVariant): "on-light-sky" | "on-dark-sky" {
+  switch (variant) {
+    case "clear-night":
+    case "rain":
+    case "thunderstorm":
+      return "on-dark-sky";
+    default:
+      return "on-light-sky";
+  }
+}
+
+export function applySkyTheme(variant: SkyVariant) {
+  const root = document.documentElement;
+  root.dataset.sky = variant;
+  root.dataset.skyContrast = skyContrastMode(variant);
+  root.style.setProperty("--sky-bottom-color", skyBottomColor(variant));
+}

@@ -17,6 +17,11 @@ import {
   type NotificationSchedule,
 } from "../../../shared/notification-schedule";
 import {
+  parseGrowthData,
+  serializeGrowthData,
+} from "../../../shared/growth/store";
+import type { ProjectGrowthData } from "../../../shared/growth/types";
+import {
   countTemplateWeeks,
   DEFAULT_TEMPLATE_SLUG,
   personalizeTemplateForNewProject,
@@ -41,6 +46,7 @@ interface ProjectRow {
   funnelNote: string;
   releaseDate: string | null;
   notificationSchedule: NotificationSchedule | null;
+  growthData?: ProjectGrowthData;
   createdAt: string;
   updatedAt: string;
 }
@@ -108,6 +114,7 @@ function loadDb(): NativeDb {
       project.releaseDate = project.releaseDate ?? null;
       project.notificationSchedule =
         parseNotificationSchedule(project.notificationSchedule) ?? null;
+      project.growthData = parseGrowthData(project.growthData);
     }
     return parsed;
   } catch {
@@ -332,7 +339,7 @@ export async function getProject(id: string): Promise<ProjectDetail | null> {
       };
     });
 
-  return { ...mapSummary(project, database), phases: mappedPhases };
+  return { ...mapSummary(project, database), phases: mappedPhases, growthData: parseGrowthData(project.growthData) };
 }
 
 export async function updateProject(
@@ -355,6 +362,9 @@ export async function updateProject(
   }
   if (input.notificationSchedule !== undefined) {
     project.notificationSchedule = input.notificationSchedule;
+  }
+  if (input.growthData !== undefined) {
+    project.growthData = input.growthData;
   }
   project.updatedAt = new Date().toISOString();
   saveDb();
@@ -510,6 +520,7 @@ function replaceAll(database: NativeDb, data: SyncData) {
     ...project,
     releaseDate: project.releaseDate ?? null,
     notificationSchedule: project.notificationSchedule ?? null,
+    growthData: parseGrowthData(project.growthData),
   }));
   database.phases = data.phases.map((phase) => ({
     ...phase,

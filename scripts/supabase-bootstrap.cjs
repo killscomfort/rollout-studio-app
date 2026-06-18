@@ -123,6 +123,8 @@ async function main() {
     "002_release_date.sql",
     "003_notification_schedule.sql",
     "004_user_tracking.sql",
+    "005_growth_hub.sql",
+    "006_admin_stats_rpc.sql",
   ]) {
     await runMigration(file);
   }

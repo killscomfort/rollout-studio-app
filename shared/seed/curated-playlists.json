@@ -1,0 +1,122 @@
+[
+  {
+    "id": "kc-deep-groove-weekly",
+    "name": "Deep Groove Weekly",
+    "platform": "spotify",
+    "genre": "Deep house / melodic techno",
+    "followerRange": "2K–8K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Club-ready records with strong low-end and clear DJ intro/outro."
+  },
+  {
+    "id": "kc-warehouse-nights",
+    "name": "Warehouse Nights",
+    "platform": "spotify",
+    "genre": "Techno / industrial",
+    "followerRange": "1K–5K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Dark, driving 128–135 BPM. Prefer DJ-friendly structures."
+  },
+  {
+    "id": "kc-miami-afterhours",
+    "name": "Miami Afterhours",
+    "platform": "spotify",
+    "genre": "Tech house",
+    "followerRange": "3K–12K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Late-night energy; vocals optional but hooks help."
+  },
+  {
+    "id": "kc-bass-club-selects",
+    "name": "Bass Club Selects",
+    "platform": "spotify",
+    "genre": "Bass house / UK bass",
+    "followerRange": "5K–15K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "High-energy drops; keep intros under 30s for streaming."
+  },
+  {
+    "id": "kc-dj-toolroom",
+    "name": "DJ Toolroom",
+    "platform": "spotify",
+    "genre": "House / edits",
+    "followerRange": "800–4K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Functional DJ tools, loops, and edit-friendly tracks."
+  },
+  {
+    "id": "kc-festival-warmups",
+    "name": "Festival Warmups",
+    "platform": "spotify",
+    "genre": "Progressive / melodic",
+    "followerRange": "10K–40K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Longer builds; emotional peaks. Competitive — pitch hard."
+  },
+  {
+    "id": "kc-underground-usa",
+    "name": "Underground USA",
+    "platform": "spotify",
+    "genre": "Underground house & techno",
+    "followerRange": "500–3K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Smaller curators often reply faster. Personalize every pitch."
+  },
+  {
+    "id": "kc-soundcloud-reposts-01",
+    "name": "BassRider Reposts",
+    "platform": "soundcloud",
+    "genre": "Bass / dubstep",
+    "followerRange": "15K–60K",
+    "contactUrl": "https://soundcloud.com/",
+    "submitMethod": "DM on SoundCloud",
+    "notes": "Send private link + 1-line hook. Follow before DM."
+  },
+  {
+    "id": "kc-soundcloud-reposts-02",
+    "name": "Night Drive SC",
+    "platform": "soundcloud",
+    "genre": "Deep / ambient club",
+    "followerRange": "5K–20K",
+    "contactUrl": "https://soundcloud.com/",
+    "submitMethod": "DM on SoundCloud",
+    "notes": "Great for pre-release teasers 60–90s."
+  },
+  {
+    "id": "kc-vocal-house-gems",
+    "name": "Vocal House Gems",
+    "platform": "spotify",
+    "genre": "Vocal house",
+    "followerRange": "2K–9K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Only if your record has a topline; mention vocalist credit."
+  },
+  {
+    "id": "kc-latin-club",
+    "name": "Latin Club Fusion",
+    "platform": "spotify",
+    "genre": "Latin house / dembow edits",
+    "followerRange": "4K–18K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Miami/LATAM floor records; percussion-forward."
+  },
+  {
+    "id": "kc-indie-dance",
+    "name": "Indie Dance Discovery",
+    "platform": "spotify",
+    "genre": "Indie dance / electro",
+    "followerRange": "1K–6K",
+    "contactUrl": "https://www.submithub.com/",
+    "submitMethod": "SubmitHub",
+    "notes": "Arty but club-usable; strong artwork helps."
+  }
+]

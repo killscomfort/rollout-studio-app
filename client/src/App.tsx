@@ -4,6 +4,7 @@ import { initAppData, useCloudBackend, onAuthStateChange, subscribeToCloudChange
 import { getSession } from "./lib/supabase";
 import { AppNavBar } from "./components/AppNavBar";
 import { AuthPage } from "./pages/AuthPage";
+import { AdminPage } from "./pages/AdminPage";
 import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ProjectWorkspace } from "./pages/ProjectWorkspace";
@@ -17,7 +18,7 @@ interface NavEntry {
   projectId: string | null;
 }
 
-const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
+import { ACTIVE_PROJECT_KEY } from "./lib/active-project";
 
 function isWidgetMode() {
   if (Capacitor.isNativePlatform()) {
@@ -50,6 +51,9 @@ export default function App() {
   const [projectTitle, setProjectTitle] = useState("");
   const [workspaceKey, setWorkspaceKey] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [adminMode, setAdminMode] = useState(
+    () => !widgetMode && window.location.hash === "#admin"
+  );
 
   const currentNav = navState.history[navState.index] ?? { view: "list", projectId: null };
   const view = currentNav.view;
@@ -126,6 +130,18 @@ export default function App() {
   useEffect(() => {
     if (widgetMode) return;
 
+    function syncAdminMode() {
+      setAdminMode(window.location.hash === "#admin");
+    }
+
+    syncAdminMode();
+    window.addEventListener("hashchange", syncAdminMode);
+    return () => window.removeEventListener("hashchange", syncAdminMode);
+  }, [widgetMode]);
+
+  useEffect(() => {
+    if (widgetMode) return;
+
     function openFromHash() {
       const match = window.location.hash.match(/^#open\/(.+)$/);
       if (!match) return;
@@ -179,6 +195,21 @@ export default function App() {
       return <WidgetPanel key={refreshKey} />;
     }
 
+    if (adminMode) {
+      return (
+        <AdminPage
+          onBack={() => {
+            window.location.hash = "";
+            setAdminMode(false);
+            setNavState({
+              history: [{ view: "list", projectId: null }],
+              index: 0,
+            });
+          }}
+        />
+      );
+    }
+
     if (view === "list") {
       return (
         <ProjectListPage
@@ -218,7 +249,7 @@ export default function App() {
         onProjectLoaded={(project) => setProjectTitle(project.name)}
       />
     );
-  }, [projectId, view, workspaceKey, refreshKey, widgetMode]);
+  }, [projectId, view, workspaceKey, refreshKey, widgetMode, adminMode]);
 
   if (signedIn === null) {
     return (

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "kc-anno",
+    "name": "Anno Domini Beats",
+    "genre": "Hip-hop / trap / electronic crossovers",
+    "type": "open_submissions",
+    "contactUrl": "https://annodominination.com/",
+    "notes": "Strong for hybrid electronic records with rap-adjacent energy.",
+    "whenToPitch": "After final master; include BPM, key, and 2 comps."
+  },
+  {
+    "id": "kc-submission-djs",
+    "name": "DJ-focused imprints (open demos)",
+    "genre": "House & techno",
+    "type": "demo_drop",
+    "contactUrl": "https://www.submithub.com/",
+    "notes": "Filter labels accepting club records 124–132 BPM.",
+    "whenToPitch": "Week 3–4 of rollout with private link + DJ mix proof."
+  },
+  {
+    "id": "kc-boutique-techno",
+    "name": "Boutique Techno labels",
+    "genre": "Techno",
+    "type": "email_pitch",
+    "contactUrl": "mailto:demos@example.com",
+    "notes": "Research 5 labels you actually play in sets; personalize heavily.",
+    "whenToPitch": "Only after playlist traction or strong DJ support."
+  },
+  {
+    "id": "kc-netlabels",
+    "name": "Netlabels & free-release imprints",
+    "genre": "Experimental club",
+    "type": "open_submissions",
+    "contactUrl": "https://www.submithub.com/",
+    "notes": "Good for building catalog momentum before bigger shops.",
+    "whenToPitch": "Early in campaign for awareness, not revenue."
+  },
+  {
+    "id": "kc-remix-comp",
+    "name": "Remix / edit labels",
+    "genre": "Edits & bootlegs (legal)",
+    "type": "demo_drop",
+    "contactUrl": "https://www.submithub.com/",
+    "notes": "If you have a official remix or licensed edit, pitch with clearance notes.",
+    "whenToPitch": "When remix contract is signed."
+  },
+  {
+    "id": "kc-vocal-feature",
+    "name": "Vocal feature imprints",
+    "genre": "Dance-pop / vocal house",
+    "type": "email_pitch",
+    "contactUrl": "mailto:demos@example.com",
+    "notes": "Include vocalist credit, split sheet status, and lyrics theme.",
+    "whenToPitch": "After Spotify pre-save campaign shows traction."
+  },
+  {
+    "id": "kc-compilation-curators",
+    "name": "Compilation curators",
+    "genre": "Multi-genre electronic",
+    "type": "open_submissions",
+    "contactUrl": "https://www.submithub.com/",
+    "notes": "VA comps are a foot in the door; read past tracklists first.",
+    "whenToPitch": "2–3 weeks before release."
+  },
+  {
+    "id": "kc-local-collective",
+    "name": "Your city collectives",
+    "genre": "Local scene",
+    "type": "email_pitch",
+    "contactUrl": "mailto:bookings@example.com",
+    "notes": "Local labels often sign artists they see play live — book shows first.",
+    "whenToPitch": "After 2–3 local shows or live clips perform well."
+  }
+]

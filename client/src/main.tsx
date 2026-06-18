@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initAppData } from "./api";
+import { applySkyTheme, DEFAULT_SKY } from "./lib/weather-sky";
 import { useCloudBackend } from "./lib/config";
 import { getSession } from "./lib/supabase";
 import "./styles.css";
@@ -13,6 +14,8 @@ async function boot() {
     if (Capacitor.isNativePlatform()) {
       document.body.classList.add("native-mobile");
     }
+
+    applySkyTheme(DEFAULT_SKY.variant);
 
     if (useCloudBackend()) {
       const session = await getSession();
