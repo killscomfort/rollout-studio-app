@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SkyBackground } from "../components/SkyBackground";
 import * as supabaseStore from "../data/supabase-store";
 
 interface AuthPageProps {
@@ -38,6 +39,7 @@ export function AuthPage({ onSignedIn }: AuthPageProps) {
 
   return (
     <div className="app-shell auth-shell">
+      <SkyBackground layout="fixed" />
       <div className="panel-card auth-card">
         <h1 className="page-title">Rollout Studio</h1>
         <p className="page-subtitle">

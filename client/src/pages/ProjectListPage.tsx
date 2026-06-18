@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import type { CreateProjectInput, ProjectSummary } from "../../../shared/types";
+import { DEFAULT_TEMPLATE_SLUG } from "../../../shared/template-personalize";
 import { SyncControls } from "../components/SyncControls";
 import { AccountControls } from "../components/AccountControls";
 import { AppFooter } from "../components/AppFooter";
-import { isSupabaseConfigured } from "../api";
+import { useCloudBackend } from "../api";
 import { api } from "../api";
 
 interface ProjectListPageProps {
@@ -12,24 +13,16 @@ interface ProjectListPageProps {
 
 export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
-  const [templates, setTemplates] = useState<
-    Array<{ slug: string; name: string; tagline: string }>
-  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
-  const [templateSlug, setTemplateSlug] = useState("fuckdahaters");
 
   async function refresh() {
     setLoading(true);
     setError(null);
     try {
-      const [projectList, templateList] = await Promise.all([
-        api.listProjects(),
-        api.listTemplates(),
-      ]);
+      const projectList = await api.listProjects();
       setProjects(projectList);
-      setTemplates(templateList);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load projects");
     } finally {
@@ -47,7 +40,7 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
 
     const input: CreateProjectInput = {
       name: name.trim(),
-      templateSlug,
+      templateSlug: DEFAULT_TEMPLATE_SLUG,
     };
 
     try {
@@ -70,11 +63,20 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
           </p>
         </div>
         <div className="page-header-actions">
-          {isSupabaseConfigured() ? <AccountControls /> : null}
+          {useCloudBackend() ? <AccountControls /> : null}
         </div>
       </div>
 
-      {error ? <div className="callout">{error}</div> : null}
+      {error ? (
+        <div className="callout error">
+          <strong>Couldn&apos;t load projects.</strong> {error}
+          <div className="toolbar" style={{ marginTop: 12 }}>
+            <button type="button" className="button" onClick={() => void refresh()}>
+              Try again
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <SyncControls onSynced={() => void refresh()} />
 
@@ -89,19 +91,6 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
               placeholder="My next single rollout"
             />
           </label>
-          <label>
-            Start from template
-            <select
-              value={templateSlug}
-              onChange={(event) => setTemplateSlug(event.target.value)}
-            >
-              {templates.map((template) => (
-                <option key={template.slug} value={template.slug}>
-                  {template.name} — {template.tagline}
-                </option>
-              ))}
-            </select>
-          </label>
           <div className="toolbar">
             <button type="submit" className="button primary">
               Create project
@@ -110,10 +99,10 @@ export function ProjectListPage({ onOpenProject }: ProjectListPageProps) {
         </form>
       </div>
 
-      <h2 className="section-title">Your projects</h2>
+      <h2 className="section-title sky-heading">Your projects</h2>
       {loading ? (
         <div className="empty-state">Loading projects…</div>
-      ) : projects.length === 0 ? (
+      ) : error ? null : projects.length === 0 ? (
         <div className="empty-state">No projects yet. Create one above.</div>
       ) : (
         <div className="project-grid">

@@ -77,8 +77,12 @@ async function checkSupabase() {
   } else {
     console.log("One-time setup in Supabase:");
     if (dash) {
-      console.log(`1. SQL Editor → paste and run supabase/migrations/001_rollout_studio.sql`);
+      console.log(`1. Run: SUPABASE_ACCESS_TOKEN=sbp_... npm run setup:supabase`);
+      console.log(`   (token from https://supabase.com/dashboard/account/tokens)`);
+      console.log(`   Or paste SQL manually in SQL Editor:`);
       console.log(`   ${dash}/sql/new`);
+      console.log(`   → supabase/migrations/001_rollout_studio.sql`);
+      console.log(`   → supabase/migrations/002_release_date.sql`);
       console.log(`2. Authentication → Providers → enable Email`);
       console.log(`   ${dash}/auth/providers`);
       console.log(`3. (Recommended) Turn off “Confirm email” for easier sign-up, or leave on`);

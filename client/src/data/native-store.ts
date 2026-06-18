@@ -11,7 +11,17 @@ import type {
   UpdateProjectInput,
   Week,
 } from "../../../shared/types";
-import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
+import { suggestReleaseDate } from "../../../shared/calendar";
+import {
+  parseNotificationSchedule,
+  type NotificationSchedule,
+} from "../../../shared/notification-schedule";
+import {
+  countTemplateWeeks,
+  DEFAULT_TEMPLATE_SLUG,
+  personalizeTemplateForNewProject,
+} from "../../../shared/template-personalize";
+import { TEMPLATES } from "./templates";
 import {
   createSyncBundle,
   mergeSyncData,
@@ -30,6 +40,7 @@ interface ProjectRow {
   bookingUrl: string;
   funnelNote: string;
   releaseDate: string | null;
+  notificationSchedule: NotificationSchedule | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +106,8 @@ function loadDb(): NativeDb {
     const parsed = JSON.parse(raw) as NativeDb;
     for (const project of parsed.projects) {
       project.releaseDate = project.releaseDate ?? null;
+      project.notificationSchedule =
+        parseNotificationSchedule(project.notificationSchedule) ?? null;
     }
     return parsed;
   } catch {
@@ -121,13 +134,14 @@ async function getDb() {
 async function initDb() {
   db = loadDb();
   if (db.projects.length === 0) {
+    const seed = TEMPLATES[DEFAULT_TEMPLATE_SLUG];
     await createProjectFromTemplate({
-      name: BLANK_TEMPLATE.name,
-      slug: BLANK_TEMPLATE.slug,
-      tagline: BLANK_TEMPLATE.tagline,
-      bookingUrl: BLANK_TEMPLATE.bookingUrl,
-      funnelNote: BLANK_TEMPLATE.funnelNote,
-      templateSlug: "blank",
+      name: seed.name,
+      slug: seed.slug,
+      tagline: seed.tagline,
+      bookingUrl: seed.bookingUrl,
+      funnelNote: seed.funnelNote,
+      templateSlug: DEFAULT_TEMPLATE_SLUG,
     });
   }
 }
@@ -173,6 +187,7 @@ function mapSummary(project: ProjectRow, database: NativeDb): ProjectSummary {
     bookingUrl: project.bookingUrl,
     funnelNote: project.funnelNote,
     releaseDate: project.releaseDate ?? null,
+    notificationSchedule: project.notificationSchedule ?? null,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     totalTasks,
@@ -218,13 +233,21 @@ function insertPlan(database: NativeDb, projectId: string, template: ProjectTemp
 export async function createProjectFromTemplate(
   input: CreateProjectInput
 ): Promise<ProjectDetail> {
-  const template = TEMPLATES[input.templateSlug ?? "blank"] ?? TEMPLATES.blank;
+  const baseTemplate =
+    TEMPLATES[input.templateSlug ?? DEFAULT_TEMPLATE_SLUG] ??
+    TEMPLATES[DEFAULT_TEMPLATE_SLUG];
+  const template = personalizeTemplateForNewProject(
+    baseTemplate,
+    input.name,
+    input.bookingUrl
+  );
   const database = await getDb();
   const now = new Date().toISOString();
   const id = uuid();
   const slug = input.slug
     ? uniqueSlug(input.slug, database)
     : uniqueSlug(input.name, database);
+  const releaseDate = suggestReleaseDate(countTemplateWeeks(template));
 
   database.projects.push({
     id,
@@ -233,7 +256,8 @@ export async function createProjectFromTemplate(
     tagline: input.tagline ?? template.tagline,
     bookingUrl: input.bookingUrl ?? template.bookingUrl,
     funnelNote: input.funnelNote ?? template.funnelNote,
-    releaseDate: null,
+    releaseDate,
+    notificationSchedule: null,
     createdAt: now,
     updatedAt: now,
   });
@@ -328,6 +352,9 @@ export async function updateProject(
   project.funnelNote = input.funnelNote ?? existing.funnelNote;
   if (input.releaseDate !== undefined) {
     project.releaseDate = input.releaseDate;
+  }
+  if (input.notificationSchedule !== undefined) {
+    project.notificationSchedule = input.notificationSchedule;
   }
   project.updatedAt = new Date().toISOString();
   saveDb();
@@ -448,10 +475,19 @@ export async function replacePlan(projectId: string, template: ProjectTemplate) 
 }
 
 export async function resetPlan(projectId: string, templateSlug: string) {
-  const template = TEMPLATES[templateSlug];
-  if (!template) {
+  const baseTemplate = TEMPLATES[templateSlug];
+  if (!baseTemplate) {
     throw new Error("Unknown template");
   }
+  const existing = await getProject(projectId);
+  if (!existing) {
+    throw new Error("Project not found");
+  }
+  const template = personalizeTemplateForNewProject(
+    baseTemplate,
+    existing.name,
+    existing.bookingUrl
+  );
   return replacePlan(projectId, template);
 }
 
@@ -473,6 +509,7 @@ function replaceAll(database: NativeDb, data: SyncData) {
   database.projects = data.projects.map((project) => ({
     ...project,
     releaseDate: project.releaseDate ?? null,
+    notificationSchedule: project.notificationSchedule ?? null,
   }));
   database.phases = data.phases.map((phase) => ({
     ...phase,

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { SyncBundle } from "../../../shared/sync";
 import { validateSyncBundle } from "../../../shared/sync";
-import { api, isSupabaseConfigured } from "../api";
+import { api, useCloudBackend } from "../api";
 
 interface SyncControlsProps {
   onSynced: () => void;
@@ -35,7 +35,7 @@ export function SyncControls({ onSynced }: SyncControlsProps) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (isSupabaseConfigured()) {
+  if (useCloudBackend()) {
     return (
       <div className="panel-card sync-panel">
         <h2 className="section-title">Cloud sync</h2>

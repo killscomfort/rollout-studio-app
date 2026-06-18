@@ -1,5 +1,5 @@
 import { Capacitor } from "@capacitor/core";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ProjectDetail } from "../../../shared/types";
 import {
   buildCalendarEvents,
@@ -9,7 +9,16 @@ import {
   DEFAULT_CALENDAR_NAME,
   DEFAULT_CALENDAR_TIMEZONE,
   suggestReleaseDate,
+  toNotificationTasks,
 } from "../../../shared/calendar";
+import {
+  defaultNotificationSchedule,
+  resolveNotificationSchedule,
+  WEEKDAYS,
+  type DayAvailability,
+  type NotificationSchedule,
+  type Weekday,
+} from "../../../shared/notification-schedule";
 import { api } from "../api";
 
 interface CalendarSyncPanelProps {
@@ -19,12 +28,20 @@ interface CalendarSyncPanelProps {
   onProjectUpdated: (project: ProjectDetail) => void;
 }
 
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
+
 function slugifyFilename(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 48) || "rollout";
+}
+
+function formatHour(hour: number) {
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const normalized = hour % 12 || 12;
+  return `${normalized}:00 ${suffix}`;
 }
 
 async function shareCalendarFile(filename: string, ics: string) {
@@ -48,6 +65,20 @@ async function shareCalendarFile(filename: string, ics: string) {
   URL.revokeObjectURL(url);
 }
 
+function updateDay(
+  schedule: NotificationSchedule,
+  day: Weekday,
+  patch: Partial<DayAvailability>
+): NotificationSchedule {
+  return {
+    ...schedule,
+    days: {
+      ...schedule.days,
+      [day]: { ...schedule.days[day], ...patch },
+    },
+  };
+}
+
 export function CalendarSyncPanel({
   project,
   releaseDate,
@@ -56,10 +87,21 @@ export function CalendarSyncPanel({
 }: CalendarSyncPanelProps) {
   const isNative = Capacitor.isNativePlatform();
   const [reminderMinutes, setReminderMinutes] = useState(DEFAULT_CALENDAR_ALERT_MINUTES);
-  const [timezone, setTimezone] = useState(DEFAULT_CALENDAR_TIMEZONE);
+  const [schedule, setSchedule] = useState<NotificationSchedule>(() =>
+    resolveNotificationSchedule(project.notificationSchedule, DEFAULT_CALENDAR_TIMEZONE)
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setSchedule(
+      resolveNotificationSchedule(
+        project.notificationSchedule,
+        project.notificationSchedule?.timezone ?? DEFAULT_CALENDAR_TIMEZONE
+      )
+    );
+  }, [project.id, project.notificationSchedule]);
 
   const totalWeeks = useMemo(() => countPlanWeeks(project), [project]);
   const suggestedDate = useMemo(
@@ -72,11 +114,45 @@ export function CalendarSyncPanel({
     return buildCalendarEvents(project, {
       releaseDate,
       reminderMinutesBefore: reminderMinutes,
-      timezone,
+      timezone: schedule.timezone,
       calendarName: `${project.name} Rollout`,
       skipCompleted: true,
+      notificationSchedule: schedule,
     });
-  }, [project, releaseDate, reminderMinutes, timezone]);
+  }, [project, releaseDate, reminderMinutes, schedule]);
+
+  const pushPreview = useMemo(() => {
+    if (!releaseDate) return null;
+    return toNotificationTasks(project, {
+      releaseDate,
+      reminderMinutesBefore: reminderMinutes,
+      timezone: schedule.timezone,
+      skipCompleted: true,
+      push: true,
+      pushLeadMinutes: 15,
+      notificationSchedule: schedule,
+    }).filter((task) => task.pushAt);
+  }, [project, releaseDate, reminderMinutes, schedule]);
+
+  async function saveNotificationSettings() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const updated = await api.updateProject(project.id, {
+        notificationSchedule: schedule,
+      });
+      if (!updated) {
+        throw new Error("Project not found");
+      }
+      onProjectUpdated(updated);
+      setMessage("Notification schedule saved.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save notification schedule");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function saveReleaseDate() {
     setBusy(true);
@@ -116,9 +192,10 @@ export function CalendarSyncPanel({
       const events = buildCalendarEvents(project, {
         releaseDate: date,
         reminderMinutesBefore: reminderMinutes,
-        timezone,
+        timezone: schedule.timezone,
         calendarName: `${project.name} Rollout`,
         skipCompleted: true,
+        notificationSchedule: schedule,
       });
 
       if (events.length === 0) {
@@ -128,9 +205,10 @@ export function CalendarSyncPanel({
       const ics = buildProjectIcs(project, {
         releaseDate: date,
         reminderMinutesBefore: reminderMinutes,
-        timezone,
+        timezone: schedule.timezone,
         calendarName: `${project.name} Rollout`,
         skipCompleted: true,
+        notificationSchedule: schedule,
       });
 
       await shareCalendarFile(`${slugifyFilename(project.name)}-rollout.ics`, ics);
@@ -146,13 +224,16 @@ export function CalendarSyncPanel({
     }
   }
 
+  function resetSchedule() {
+    setSchedule(defaultNotificationSchedule(schedule.timezone));
+  }
+
   return (
     <div className="panel-card calendar-panel">
       <h2 className="section-title">Apple Calendar reminders</h2>
       <p className="sync-copy">
-        Turn rollout tasks into calendar events with native iPhone alerts. On iPhone, export
-        and add to a calendar like <strong>{DEFAULT_CALENDAR_NAME}</strong>. On Mac, use{" "}
-        <code>npm run sync:icloud</code> for automatic iCloud sync (see SHARING.md).
+        Turn rollout tasks into calendar events with native iPhone alerts. Set your weekly
+        availability so Pushcut nudges land during hours you are actually reachable.
       </p>
 
       {message ? <div className="callout success">{message}</div> : null}
@@ -183,7 +264,12 @@ export function CalendarSyncPanel({
         </label>
         <label>
           Timezone
-          <select value={timezone} onChange={(event) => setTimezone(event.target.value)}>
+          <select
+            value={schedule.timezone}
+            onChange={(event) =>
+              setSchedule((current) => ({ ...current, timezone: event.target.value }))
+            }
+          >
             <option value="America/New_York">America/New_York</option>
             <option value="America/Chicago">America/Chicago</option>
             <option value="America/Denver">America/Denver</option>
@@ -193,10 +279,104 @@ export function CalendarSyncPanel({
         </label>
       </div>
 
+      <div className="schedule-panel">
+        <div className="schedule-panel-header">
+          <h3 className="schedule-title">Your weekly availability</h3>
+          <p className="schedule-copy">
+            Tasks schedule at each day&apos;s start hour. Push nudges avoid off-hours and
+            shift to your next available window.
+          </p>
+        </div>
+
+        <div className="schedule-grid" role="group" aria-label="Weekly availability">
+          <div className="schedule-row schedule-row-head">
+            <span>Day</span>
+            <span>Available</span>
+            <span>From</span>
+            <span>Until</span>
+          </div>
+          {WEEKDAYS.map((day) => {
+            const daySchedule = schedule.days[day];
+            return (
+              <div className="schedule-row" key={day}>
+                <span className="schedule-day">{day}</span>
+                <label className="schedule-check">
+                  <input
+                    type="checkbox"
+                    checked={daySchedule.enabled}
+                    onChange={(event) =>
+                      setSchedule((current) =>
+                        updateDay(current, day, { enabled: event.target.checked })
+                      )
+                    }
+                  />
+                </label>
+                <select
+                  value={daySchedule.startHour}
+                  disabled={!daySchedule.enabled}
+                  onChange={(event) =>
+                    setSchedule((current) =>
+                      updateDay(current, day, { startHour: Number(event.target.value) })
+                    )
+                  }
+                >
+                  {HOUR_OPTIONS.map((hour) => (
+                    <option key={`${day}-start-${hour}`} value={hour}>
+                      {formatHour(hour)}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={daySchedule.endHour}
+                  disabled={!daySchedule.enabled}
+                  onChange={(event) =>
+                    setSchedule((current) =>
+                      updateDay(current, day, { endHour: Number(event.target.value) })
+                    )
+                  }
+                >
+                  {HOUR_OPTIONS.filter((hour) => hour > daySchedule.startHour).map((hour) => (
+                    <option key={`${day}-end-${hour}`} value={hour}>
+                      {formatHour(hour)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="toolbar">
+          <button
+            type="button"
+            className="button primary"
+            disabled={busy}
+            onClick={() => void saveNotificationSettings()}
+          >
+            Save notification schedule
+          </button>
+          <button
+            type="button"
+            className="button ghost"
+            disabled={busy}
+            onClick={resetSchedule}
+          >
+            Reset to defaults
+          </button>
+        </div>
+      </div>
+
       <p className="calendar-meta">
         {totalWeeks}-week plan ·{" "}
         {preview ? `${preview.length} upcoming reminders` : "Set a release date to preview"}{" "}
         · Suggested release: {suggestedDate}
+        {pushPreview && pushPreview.length > 0
+          ? ` · Next push window: ${pushPreview[0].pushAt?.toLocaleString(undefined, {
+              weekday: "short",
+              hour: "numeric",
+              minute: "2-digit",
+            })}`
+          : ""}
       </p>
 
       <div className="toolbar">
@@ -239,7 +419,7 @@ export function CalendarSyncPanel({
           Mac auto-sync: set iCloud credentials in <code>.env</code>, create calendar{" "}
           <strong>{DEFAULT_CALENDAR_NAME}</strong>, then run{" "}
           <code>npm run sync:icloud</code>. Optional Pushcut nudges:{" "}
-          <code>npm run push:nudges</code>.
+          <code>npm run push:nudges</code> — uses this schedule from your project database.
         </p>
       )}
     </div>

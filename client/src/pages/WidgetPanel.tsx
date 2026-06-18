@@ -2,12 +2,12 @@ import { Capacitor } from "@capacitor/core";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ProjectDetail } from "../../../shared/types";
 import { CATEGORY_LABELS } from "../../../shared/types";
-import { api, isSupabaseConfigured, subscribeToCloudChanges } from "../api";
+import { api, useCloudBackend, subscribeToCloudChanges } from "../api";
 import {
   celebrateTaskComplete,
   TASK_CELEBRATION_MS,
 } from "../lib/celebrate-task";
-import { WidgetSkyBackground } from "../components/WidgetSkyBackground";
+import { SkyBackground } from "../components/SkyBackground";
 
 const ACTIVE_PROJECT_KEY = "rollout-active-project-id";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -78,7 +78,7 @@ export function WidgetPanel() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+    if (!useCloudBackend()) return;
     return subscribeToCloudChanges(() => {
       void loadProject();
     });
@@ -154,7 +154,7 @@ export function WidgetPanel() {
 
   return (
     <div className="widget-shell">
-      <WidgetSkyBackground />
+      <SkyBackground />
       <div className="widget-content">
         <div className="widget-header">
           <div className="widget-drag">

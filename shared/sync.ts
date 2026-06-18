@@ -1,3 +1,5 @@
+import type { NotificationSchedule } from "./notification-schedule";
+
 export const SYNC_VERSION = 1;
 
 export interface SyncProject {
@@ -8,6 +10,7 @@ export interface SyncProject {
   bookingUrl: string;
   funnelNote: string;
   releaseDate: string | null;
+  notificationSchedule: NotificationSchedule | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -109,6 +112,7 @@ function appendProject(data: SyncData, projectId: string, incoming: SyncData) {
   data.projects.push({
     ...project,
     releaseDate: project.releaseDate ?? null,
+    notificationSchedule: project.notificationSchedule ?? null,
   });
   data.phases.push(
     ...incoming.phases

@@ -35,6 +35,9 @@ async function runPreview(projectRef?: string) {
   console.log(`  Release date: ${project.releaseDate}`);
   console.log(`  Calendar: ${notificationConfig.calendarName}`);
   console.log(`  Timezone: ${notificationConfig.timezone}`);
+  if (project.notificationSchedule) {
+    console.log(`  Project schedule: ${project.notificationSchedule.timezone}`);
+  }
   console.log(`  Upcoming tasks: ${tasks.length}`);
   console.log("");
 

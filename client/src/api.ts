@@ -8,7 +8,7 @@ import type {
   UpdateTaskInput,
 } from "../../shared/types";
 import type { SyncBundle, SyncImportResult } from "../../shared/sync";
-import { isSupabaseConfigured } from "./lib/config";
+import { isSupabaseConfigured, useCloudBackend } from "./lib/config";
 import * as localDb from "./data/native-store";
 import * as cloudDb from "./data/supabase-store";
 import { listTemplates as listLocalTemplates } from "./data/templates";
@@ -16,25 +16,39 @@ import { listTemplates as listLocalTemplates } from "./data/templates";
 const API_BASE = import.meta.env.VITE_API_BASE ?? "";
 
 function useCloudData() {
-  return isSupabaseConfigured();
+  return useCloudBackend();
 }
 
 function useLocalNativeData() {
   return Capacitor.isNativePlatform() && !useCloudData();
 }
 
+function localApiHint() {
+  return "Start the local app with `npm run dev` so the API is running.";
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    });
+  } catch {
+    throw new Error(`Can't reach the local API. ${localApiHint()}`);
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.error ?? `Request failed (${response.status})`);
+    const detail = body.error ?? `Request failed (${response.status})`;
+    throw new Error(
+      response.status >= 500
+        ? `${detail}. ${localApiHint()}`
+        : detail
+    );
   }
 
   if (response.status === 204) {
@@ -150,6 +164,6 @@ export async function initAppData() {
   }
 }
 
-export { isSupabaseConfigured } from "./lib/config";
+export { isSupabaseConfigured, useCloudBackend } from "./lib/config";
 export { onAuthStateChange } from "./data/supabase-store";
 export { subscribeToCloudChanges } from "./lib/cloud-sync";

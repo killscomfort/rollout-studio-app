@@ -1,3 +1,5 @@
+import type { NotificationSchedule } from "./notification-schedule";
+
 export type TaskCategory =
   | "content"
   | "distribute"
@@ -49,6 +51,7 @@ export interface ProjectSummary {
   bookingUrl: string;
   funnelNote: string;
   releaseDate: string | null;
+  notificationSchedule: NotificationSchedule | null;
   createdAt: string;
   updatedAt: string;
   totalTasks: number;
@@ -99,6 +102,7 @@ export interface UpdateProjectInput {
   bookingUrl?: string;
   funnelNote?: string;
   releaseDate?: string | null;
+  notificationSchedule?: NotificationSchedule | null;
 }
 
 export interface UpdateTaskInput {

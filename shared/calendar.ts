@@ -1,3 +1,5 @@
+import type { NotificationSchedule } from "./notification-schedule";
+import { adjustPushTime, taskStartHourForDay } from "./notification-schedule";
 import type { ProjectDetail } from "./types";
 import { CATEGORY_LABELS } from "./types";
 
@@ -31,6 +33,7 @@ export interface CalendarOptions {
   timezone?: string;
   calendarName?: string;
   skipCompleted?: boolean;
+  notificationSchedule?: NotificationSchedule;
 }
 
 export const CALENDAR_UID_PREFIX = "kc-rollout-";
@@ -88,7 +91,7 @@ export function buildCalendarEvents(
   if (totalWeeks === 0) return [];
 
   const releaseWeekMonday = startOfWeekMonday(parseDateOnly(options.releaseDate));
-  const hour = options.hour ?? 9;
+  const defaultHour = options.hour ?? 9;
   const minute = options.minute ?? 0;
   const durationMinutes = options.durationMinutes ?? DEFAULT_CALENDAR_DURATION_MINUTES;
   const skipCompleted = options.skipCompleted ?? true;
@@ -114,6 +117,11 @@ export function buildCalendarEvents(
 
         const dayOffset = DAY_OFFSET[task.day] ?? 0;
         const dayDate = addDays(weekMonday, dayOffset);
+        const hour = taskStartHourForDay(
+          task.day,
+          options.notificationSchedule,
+          defaultHour
+        );
         const start = new Date(dayDate);
         start.setHours(hour, minute, 0, 0);
         const end = new Date(start);
@@ -267,9 +275,11 @@ export function toNotificationTasks(
   const alertMinutes = options.reminderMinutesBefore ?? DEFAULT_CALENDAR_ALERT_MINUTES;
   const pushLead = options.pushLeadMinutes ?? 15;
   const pushDefault = options.push ?? false;
+  const schedule = options.notificationSchedule;
 
   return buildCalendarEvents(project, options).map((event) => {
     const push = pushDefault;
+    const idealPushAt = new Date(event.start.getTime() - pushLead * 60_000);
     return {
       id: event.taskId,
       title: event.summary,
@@ -279,7 +289,12 @@ export function toNotificationTasks(
       link: event.link,
       alertMinutes,
       push,
-      pushAt: push ? new Date(event.start.getTime() - pushLead * 60_000) : undefined,
+      pushAt:
+        push && schedule
+          ? adjustPushTime(idealPushAt, event.start, schedule)
+          : push
+            ? idealPushAt
+            : undefined,
     };
   });
 }

@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { initAppData } from "./api";
-import { isSupabaseConfigured } from "./lib/config";
+import { useCloudBackend } from "./lib/config";
 import { getSession } from "./lib/supabase";
 import "./styles.css";
 
@@ -14,7 +14,7 @@ async function boot() {
       document.body.classList.add("native-mobile");
     }
 
-    if (isSupabaseConfigured()) {
+    if (useCloudBackend()) {
       const session = await getSession();
       if (session) {
         await initAppData();

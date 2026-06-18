@@ -15,7 +15,14 @@ import type {
   UpdateProjectInput,
   Week,
 } from "../../shared/types";
-import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
+import { suggestReleaseDate } from "../../shared/calendar";
+import { parseNotificationSchedule } from "../../shared/notification-schedule";
+import {
+  countTemplateWeeks,
+  DEFAULT_TEMPLATE_SLUG,
+  personalizeTemplateForNewProject,
+} from "../../shared/template-personalize";
+import { TEMPLATES } from "./templates";
 
 const dataDir =
   process.env.ROLLOUT_DATA_DIR ??
@@ -80,19 +87,24 @@ export function initDb(db: Database.Database) {
   const projectColumns = db
     .prepare("PRAGMA table_info(projects)")
     .all() as Array<{ name: string }>;
-  if (!projectColumns.some((column) => column.name === "release_date")) {
+  const columnNames = new Set(projectColumns.map((column) => column.name));
+  if (!columnNames.has("release_date")) {
     db.exec("ALTER TABLE projects ADD COLUMN release_date TEXT");
+  }
+  if (!columnNames.has("notification_schedule")) {
+    db.exec("ALTER TABLE projects ADD COLUMN notification_schedule TEXT");
   }
 
   const count = db.prepare("SELECT COUNT(*) AS c FROM projects").get() as { c: number };
   if (count.c === 0) {
+    const seed = TEMPLATES[DEFAULT_TEMPLATE_SLUG];
     createProjectFromTemplate(db, {
-      name: BLANK_TEMPLATE.name,
-      slug: BLANK_TEMPLATE.slug,
-      tagline: BLANK_TEMPLATE.tagline,
-      bookingUrl: BLANK_TEMPLATE.bookingUrl,
-      funnelNote: BLANK_TEMPLATE.funnelNote,
-      templateSlug: "blank",
+      name: seed.name,
+      slug: seed.slug,
+      tagline: seed.tagline,
+      bookingUrl: seed.bookingUrl,
+      funnelNote: seed.funnelNote,
+      templateSlug: DEFAULT_TEMPLATE_SLUG,
     });
   }
 }
@@ -149,15 +161,22 @@ export function createProjectFromTemplate(
   db: Database.Database,
   input: CreateProjectInput
 ): ProjectDetail {
-  const template =
-    TEMPLATES[input.templateSlug ?? "blank"] ?? TEMPLATES.blank;
+  const baseTemplate =
+    TEMPLATES[input.templateSlug ?? DEFAULT_TEMPLATE_SLUG] ??
+    TEMPLATES[DEFAULT_TEMPLATE_SLUG];
+  const template = personalizeTemplateForNewProject(
+    baseTemplate,
+    input.name,
+    input.bookingUrl
+  );
   const now = new Date().toISOString();
   const id = uuid();
   const slug = input.slug ? uniqueSlug(db, input.slug) : uniqueSlug(db, input.name);
+  const releaseDate = suggestReleaseDate(countTemplateWeeks(template));
 
   db.prepare(
-    `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, release_date, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     slug,
@@ -165,6 +184,7 @@ export function createProjectFromTemplate(
     input.tagline ?? template.tagline,
     input.bookingUrl ?? template.bookingUrl,
     input.funnelNote ?? template.funnelNote,
+    releaseDate,
     now,
     now
   );
@@ -196,6 +216,10 @@ function mapReleaseDate(value: unknown): string | null {
   return raw || null;
 }
 
+function mapNotificationSchedule(value: unknown) {
+  return parseNotificationSchedule(value);
+}
+
 function mapSummary(row: Record<string, unknown>): ProjectSummary {
   return {
     id: String(row.id),
@@ -205,6 +229,7 @@ function mapSummary(row: Record<string, unknown>): ProjectSummary {
     bookingUrl: String(row.booking_url),
     funnelNote: String(row.funnel_note),
     releaseDate: mapReleaseDate(row.release_date),
+    notificationSchedule: mapNotificationSchedule(row.notification_schedule),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     totalTasks: Number(row.total_tasks ?? 0),
@@ -303,7 +328,8 @@ export function updateProject(
 
   db.prepare(
     `UPDATE projects
-     SET name = ?, tagline = ?, booking_url = ?, funnel_note = ?, release_date = ?, updated_at = ?
+     SET name = ?, tagline = ?, booking_url = ?, funnel_note = ?, release_date = ?,
+         notification_schedule = ?, updated_at = ?
      WHERE id = ?`
   ).run(
     input.name ?? existing.name,
@@ -313,6 +339,13 @@ export function updateProject(
     input.releaseDate !== undefined
       ? input.releaseDate
       : existing.releaseDate,
+    input.notificationSchedule !== undefined
+      ? input.notificationSchedule
+        ? JSON.stringify(input.notificationSchedule)
+        : null
+      : existing.notificationSchedule
+        ? JSON.stringify(existing.notificationSchedule)
+        : null,
     new Date().toISOString(),
     id
   );

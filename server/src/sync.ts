@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import type { SyncData } from "../../shared/sync";
+import { parseNotificationSchedule } from "../../shared/notification-schedule";
 import { createSyncBundle, mergeSyncData, type SyncBundle } from "../../shared/sync";
 
 type Row = Record<string, unknown>;
@@ -20,6 +21,7 @@ export function exportSyncData(db: Database.Database): SyncData {
     bookingUrl: String(row.booking_url),
     funnelNote: String(row.funnel_note),
     releaseDate: mapReleaseDate(row.release_date),
+    notificationSchedule: parseNotificationSchedule(row.notification_schedule),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
   }));
@@ -77,8 +79,8 @@ function replaceAllData(db: Database.Database, data: SyncData) {
     db.prepare("DELETE FROM projects").run();
 
     const insertProject = db.prepare(
-      `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, release_date, created_at, updated_at)
-       VALUES (@id, @slug, @name, @tagline, @bookingUrl, @funnelNote, @releaseDate, @createdAt, @updatedAt)`
+      `INSERT INTO projects (id, slug, name, tagline, booking_url, funnel_note, release_date, notification_schedule, created_at, updated_at)
+       VALUES (@id, @slug, @name, @tagline, @bookingUrl, @funnelNote, @releaseDate, @notificationSchedule, @createdAt, @updatedAt)`
     );
     const insertPhase = db.prepare(
       `INSERT INTO phases (id, project_id, sort_order, title, color)
@@ -101,6 +103,9 @@ function replaceAllData(db: Database.Database, data: SyncData) {
       insertProject.run({
         ...project,
         releaseDate: project.releaseDate ?? null,
+        notificationSchedule: project.notificationSchedule
+          ? JSON.stringify(project.notificationSchedule)
+          : null,
       });
     }
     for (const phase of data.phases) insertPhase.run(phase);

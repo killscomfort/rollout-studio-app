@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
-import { initAppData, isSupabaseConfigured, onAuthStateChange, subscribeToCloudChanges } from "./api";
+import { initAppData, useCloudBackend, onAuthStateChange, subscribeToCloudChanges } from "./api";
 import { getSession } from "./lib/supabase";
 import { AppNavBar } from "./components/AppNavBar";
 import { AuthPage } from "./pages/AuthPage";
@@ -8,7 +8,7 @@ import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ProjectWorkspace } from "./pages/ProjectWorkspace";
 import { WidgetPanel } from "./pages/WidgetPanel";
-import { WidgetSkyBackground } from "./components/WidgetSkyBackground";
+import { SkyBackground } from "./components/SkyBackground";
 
 type View = "list" | "workspace" | "settings";
 
@@ -41,7 +41,7 @@ function navSubtitle(view: View, projectTitle: string) {
 export default function App() {
   const widgetMode = isWidgetMode();
   const [signedIn, setSignedIn] = useState<boolean | null>(
-    isSupabaseConfigured() ? null : true
+    useCloudBackend() ? null : true
   );
   const [navState, setNavState] = useState<{ history: NavEntry[]; index: number }>({
     history: [{ view: "list", projectId: null }],
@@ -84,7 +84,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
+    if (!useCloudBackend()) {
       setSignedIn(true);
       return;
     }
@@ -109,7 +109,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!isSupabaseConfigured() || !signedIn) return;
+    if (!useCloudBackend() || !signedIn) return;
     return subscribeToCloudChanges(() => {
       setRefreshKey((value) => value + 1);
       setWorkspaceKey((value) => value + 1);
@@ -223,17 +223,18 @@ export default function App() {
   if (signedIn === null) {
     return (
       <div className={widgetMode ? "widget-root" : "app-shell"}>
+        {!widgetMode ? <SkyBackground layout="fixed" /> : null}
         <div className="empty-state">Loading account…</div>
       </div>
     );
   }
 
-  if (!signedIn && isSupabaseConfigured()) {
+  if (!signedIn && useCloudBackend()) {
     if (widgetMode) {
       return (
         <div className="widget-root">
           <div className="widget-shell">
-            <WidgetSkyBackground />
+            <SkyBackground />
             <div className="widget-content">
               <div className="widget-header">
                 <div className="widget-drag">
@@ -276,6 +277,7 @@ export default function App() {
 
   return (
     <div className={widgetMode ? "widget-root" : "app-shell"}>
+      {!widgetMode ? <SkyBackground layout="fixed" /> : null}
       {!widgetMode ? (
         <AppNavBar
           title={navTitle(view, projectTitle)}

@@ -2,6 +2,10 @@ import { Router } from "express";
 import type { Database } from "better-sqlite3";
 import type { CreateProjectInput, ProjectTemplate, UpdateProjectInput } from "../../../shared/types";
 import {
+  DEFAULT_TEMPLATE_SLUG,
+  personalizeTemplateForNewProject,
+} from "../../../shared/template-personalize";
+import {
   createProjectFromTemplate,
   deleteProject,
   getProject,
@@ -71,17 +75,23 @@ export function createProjectRouter(db: Database) {
   });
 
   router.post("/:id/plan/reset", (req, res) => {
-    const templateSlug = String(req.body?.templateSlug ?? "blank");
-    const template = TEMPLATES[templateSlug];
-    if (!template) {
+    const templateSlug = String(req.body?.templateSlug ?? DEFAULT_TEMPLATE_SLUG);
+    const baseTemplate = TEMPLATES[templateSlug];
+    if (!baseTemplate) {
       res.status(400).json({ error: "Unknown template" });
       return;
     }
-    const project = replacePlan(db, req.params.id, template);
-    if (!project) {
+    const existing = getProject(db, req.params.id);
+    if (!existing) {
       res.status(404).json({ error: "Project not found" });
       return;
     }
+    const template = personalizeTemplateForNewProject(
+      baseTemplate,
+      existing.name,
+      existing.bookingUrl
+    );
+    const project = replacePlan(db, req.params.id, template);
     res.json(project);
   });
 

@@ -18,8 +18,15 @@ import {
   type SyncData,
   validateSyncBundle,
 } from "../../../shared/sync";
+import { suggestReleaseDate } from "../../../shared/calendar";
+import { parseNotificationSchedule } from "../../../shared/notification-schedule";
+import {
+  countTemplateWeeks,
+  DEFAULT_TEMPLATE_SLUG,
+  personalizeTemplateForNewProject,
+} from "../../../shared/template-personalize";
 import { getSupabase, requireUserId } from "../lib/supabase";
-import { TEMPLATES, BLANK_TEMPLATE } from "./templates";
+import { TEMPLATES } from "./templates";
 
 interface ProjectRow {
   id: string;
@@ -30,6 +37,7 @@ interface ProjectRow {
   booking_url: string;
   funnel_note: string;
   release_date: string | null;
+  notification_schedule: unknown;
   created_at: string;
   updated_at: string;
 }
@@ -153,6 +161,7 @@ async function fetchUserData(userId: string): Promise<SyncData> {
       bookingUrl: project.booking_url,
       funnelNote: project.funnel_note,
       releaseDate: project.release_date?.trim() || null,
+      notificationSchedule: parseNotificationSchedule(project.notification_schedule),
       createdAt: project.created_at,
       updatedAt: project.updated_at,
     })),
@@ -204,6 +213,7 @@ function mapSummary(project: SyncData["projects"][number], data: SyncData): Proj
     bookingUrl: project.bookingUrl,
     funnelNote: project.funnelNote,
     releaseDate: project.releaseDate ?? null,
+    notificationSchedule: project.notificationSchedule ?? null,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     totalTasks,
@@ -316,13 +326,14 @@ export async function initSupabaseStore() {
 
   if (error) throw new Error(error.message);
   if ((count ?? 0) === 0) {
+    const seed = TEMPLATES[DEFAULT_TEMPLATE_SLUG];
     await createProjectFromTemplate({
-      name: BLANK_TEMPLATE.name,
-      slug: BLANK_TEMPLATE.slug,
-      tagline: BLANK_TEMPLATE.tagline,
-      bookingUrl: BLANK_TEMPLATE.bookingUrl,
-      funnelNote: BLANK_TEMPLATE.funnelNote,
-      templateSlug: "blank",
+      name: seed.name,
+      slug: seed.slug,
+      tagline: seed.tagline,
+      bookingUrl: seed.bookingUrl,
+      funnelNote: seed.funnelNote,
+      templateSlug: DEFAULT_TEMPLATE_SLUG,
     });
   }
 }
@@ -330,7 +341,14 @@ export async function initSupabaseStore() {
 export async function createProjectFromTemplate(
   input: CreateProjectInput
 ): Promise<ProjectDetail> {
-  const template = TEMPLATES[input.templateSlug ?? "blank"] ?? TEMPLATES.blank;
+  const baseTemplate =
+    TEMPLATES[input.templateSlug ?? DEFAULT_TEMPLATE_SLUG] ??
+    TEMPLATES[DEFAULT_TEMPLATE_SLUG];
+  const template = personalizeTemplateForNewProject(
+    baseTemplate,
+    input.name,
+    input.bookingUrl
+  );
   const userId = await requireUserId();
   const supabase = getSupabase();
   const now = new Date().toISOString();
@@ -338,6 +356,7 @@ export async function createProjectFromTemplate(
   const slug = input.slug
     ? await uniqueSlug(input.slug, userId)
     : await uniqueSlug(input.name, userId);
+  const releaseDate = suggestReleaseDate(countTemplateWeeks(template));
 
   const { error } = await supabase.from("projects").insert({
     id,
@@ -347,6 +366,7 @@ export async function createProjectFromTemplate(
     tagline: input.tagline ?? template.tagline,
     booking_url: input.bookingUrl ?? template.bookingUrl,
     funnel_note: input.funnelNote ?? template.funnelNote,
+    release_date: releaseDate,
     created_at: now,
     updated_at: now,
   });
@@ -399,6 +419,10 @@ export async function updateProject(
       funnel_note: input.funnelNote ?? existing.funnelNote,
       release_date:
         input.releaseDate !== undefined ? input.releaseDate : existing.releaseDate,
+      notification_schedule:
+        input.notificationSchedule !== undefined
+          ? input.notificationSchedule
+          : existing.notificationSchedule,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -535,10 +559,19 @@ export async function replacePlan(projectId: string, template: ProjectTemplate) 
 }
 
 export async function resetPlan(projectId: string, templateSlug: string) {
-  const template = TEMPLATES[templateSlug];
-  if (!template) {
+  const baseTemplate = TEMPLATES[templateSlug];
+  if (!baseTemplate) {
     throw new Error("Unknown template");
   }
+  const existing = await getProject(projectId);
+  if (!existing) {
+    throw new Error("Project not found");
+  }
+  const template = personalizeTemplateForNewProject(
+    baseTemplate,
+    existing.name,
+    existing.bookingUrl
+  );
   return replacePlan(projectId, template);
 }
 
@@ -560,6 +593,7 @@ async function replaceAllData(userId: string, data: SyncData) {
       booking_url: project.bookingUrl,
       funnel_note: project.funnelNote,
       release_date: project.releaseDate,
+      notification_schedule: project.notificationSchedule,
       created_at: project.createdAt,
       updated_at: project.updatedAt,
     });

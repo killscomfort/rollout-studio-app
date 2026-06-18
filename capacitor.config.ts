@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: "client/dist",
   ios: {
     contentInset: "automatic",
-    backgroundColor: "#0f1115",
+    backgroundColor: "#8ec9f5",
   },
   server: {
     androidScheme: "https",

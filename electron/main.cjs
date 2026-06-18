@@ -51,6 +51,10 @@ function usesCloudBackend() {
     return true;
   }
 
+  if (process.env.ROLLOUT_USE_VITE === "1") {
+    return false;
+  }
+
   if (process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY) {
     return true;
   }
@@ -256,7 +260,7 @@ function createMainWindow(projectId) {
     minHeight: 720,
     show: false,
     title: "Rollout Studio",
-    backgroundColor: "#0f1115",
+    backgroundColor: "#8ec9f5",
     webPreferences: {
       preload: path.join(__dirname, "preload.cjs"),
       contextIsolation: true,

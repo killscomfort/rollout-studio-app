@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ProjectDetail, ProjectTemplate } from "../../../shared/types";
 import { PlanEditor } from "../components/PlanEditor";
 import { CalendarSyncPanel } from "../components/CalendarSyncPanel";
+import { DEFAULT_TEMPLATE_SLUG } from "../../../shared/template-personalize";
 import { api } from "../api";
 
 interface ProjectSettingsPageProps {
@@ -29,7 +30,7 @@ export function ProjectSettingsPage({
   const [bookingUrl, setBookingUrl] = useState("");
   const [funnelNote, setFunnelNote] = useState("");
   const [releaseDate, setReleaseDate] = useState("");
-  const [templateSlug, setTemplateSlug] = useState("blank");
+  const [templateSlug, setTemplateSlug] = useState(DEFAULT_TEMPLATE_SLUG);
   const [templates, setTemplates] = useState<
     Array<{ slug: string; name: string; tagline: string }>
   >([]);
