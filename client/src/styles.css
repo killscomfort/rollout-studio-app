@@ -937,6 +937,30 @@ body:not(.widget-mode) .callout.on-sky {
   color: #8eb4ff;
 }
 
+.growth-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.growth-quick-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #2a3140;
+  background: rgba(0, 0, 0, 0.15);
+  color: #8eb4ff;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.growth-quick-link:hover {
+  border-color: #4a7cff;
+  background: rgba(74, 124, 255, 0.12);
+}
+
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

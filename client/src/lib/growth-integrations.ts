@@ -9,8 +9,9 @@ export interface GrowthIntegrationLinks {
 
 const DEFAULT_LINKS: GrowthIntegrationLinks = {
   submitHub: "https://www.submithub.com/",
-  spotifyPitch: "https://artists.spotify.com/",
-  soundcloud: "https://soundcloud.com/you/analytics",
+  spotifyPitch:
+    "https://artists.spotify.com/c/music/spotify-for-artists/pitching/",
+  soundcloud: "https://soundcloud.com/you/stats",
   youtubeStudio: "https://studio.youtube.com/",
   instagramInsights: "https://www.instagram.com/accounts/insights/",
   tiktokAnalytics: "https://www.tiktok.com/creator-center/analytics",
@@ -43,3 +44,15 @@ export function submitHubLinkForPlaylist(playlistName: string) {
   }
   return url.toString();
 }
+
+export const GROWTH_LINK_LABELS: Array<{
+  key: keyof GrowthIntegrationLinks;
+  label: string;
+}> = [
+  { key: "submitHub", label: "SubmitHub" },
+  { key: "spotifyPitch", label: "Spotify for Artists (pitch)" },
+  { key: "soundcloud", label: "SoundCloud stats" },
+  { key: "youtubeStudio", label: "YouTube Studio" },
+  { key: "instagramInsights", label: "Instagram insights" },
+  { key: "tiktokAnalytics", label: "TikTok analytics" },
+];

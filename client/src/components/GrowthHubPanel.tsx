@@ -28,6 +28,7 @@ import {
 } from "../../../shared/growth/social-schedule";
 import {
   getGrowthIntegrationLinks,
+  GROWTH_LINK_LABELS,
   submitHubLinkForPlaylist,
 } from "../lib/growth-integrations";
 import { api } from "../api";
@@ -302,6 +303,20 @@ export function GrowthHubPanel({
             Labels
           </button>
         </div>
+      </div>
+
+      <div className="growth-quick-links">
+        {GROWTH_LINK_LABELS.map(({ key, label }) => (
+          <a
+            key={key}
+            className="growth-quick-link"
+            href={links[key]}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {label}
+          </a>
+        ))}
       </div>
 
       {tab === "social" ? (
