@@ -21,6 +21,7 @@
     "build": "node scripts/run-build.cjs",
     "build:client": "VITE_ROLLOUT_BACKEND=cloud vite build --config client/vite.config.ts",
     "build:client:local": "VITE_ROLLOUT_BACKEND=local VITE_API_BASE=http://127.0.0.1:3847 vite build --config client/vite.config.ts",
+    "build:vercel": "VITE_ROLLOUT_BACKEND=cloud npm run build:client && node scripts/setup-cloud.cjs write",
     "build:server": "tsc -p server/tsconfig.json && cp server/dist-package.json server/dist/package.json",
     "start": "node scripts/run-start.cjs",
     "start:local": "node scripts/run-build.cjs && electron .",

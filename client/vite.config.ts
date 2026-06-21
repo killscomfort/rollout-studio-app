@@ -6,7 +6,7 @@ const projectRoot = path.resolve(__dirname, "..");
 
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  base: process.env.VERCEL ? "/" : "./",
   root: __dirname,
   envDir: projectRoot,
   build: {
