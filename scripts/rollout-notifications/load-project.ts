@@ -7,8 +7,9 @@ import {
 import { resolveNotificationSchedule } from "../../shared/notification-schedule.ts";
 import { getDb, getProject, initDb, listProjects } from "../../server/src/db.ts";
 import { notificationConfig } from "./config.ts";
+import { hasCloudSupabaseEnv, loadProjectFromSupabase } from "./supabase-project.ts";
 
-export function loadProjectFromDb(projectRef?: string): ProjectDetail {
+function loadProjectFromLocalDb(projectRef?: string): ProjectDetail {
   const db = getDb();
   initDb(db);
 
@@ -37,6 +38,23 @@ export function loadProjectFromDb(projectRef?: string): ProjectDetail {
     throw new Error("Failed to load the first project.");
   }
   return detail;
+}
+
+/** Load project from Supabase when cloud env is set, otherwise local SQLite. */
+export async function loadProject(projectRef?: string): Promise<{
+  project: ProjectDetail;
+  source: "cloud" | "local";
+}> {
+  if (hasCloudSupabaseEnv()) {
+    const project = await loadProjectFromSupabase(projectRef);
+    return { project, source: "cloud" };
+  }
+  return { project: loadProjectFromLocalDb(projectRef), source: "local" };
+}
+
+/** @deprecated Use loadProject() */
+export function loadProjectFromDb(projectRef?: string): ProjectDetail {
+  return loadProjectFromLocalDb(projectRef);
 }
 
 export function buildNotificationSchedule(project: ProjectDetail): {

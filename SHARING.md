@@ -64,7 +64,7 @@ For hands-free sync while your Mac is awake:
 
 1. Create calendar **KillsComfort Rollout** in Calendar.app (iCloud account)
 2. [Generate an app-specific password](https://appleid.apple.com) for iCloud CalDAV
-3. Add to `.env`: `ICLOUD_APPLE_ID`, `ICLOUD_APP_PASSWORD`, optional Pushcut keys
+3. Add to `.env`: Supabase keys, `ROLLOUT_CLI_EMAIL` + `ROLLOUT_CLI_PASSWORD` (your Rollout login), `ICLOUD_APPLE_ID`, `ICLOUD_APP_PASSWORD`, optional Pushcut keys
 4. Set **release date** in Project settings for your rollout
 5. Run:
 

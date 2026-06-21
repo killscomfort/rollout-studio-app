@@ -4,7 +4,7 @@ import { notificationConfig, hasIcloudCredentials, requireIcloudCredentials } fr
 import { connect, findCalendar, upsertEvents } from "./caldav.ts";
 import { sendPushcut } from "./pushcut.ts";
 import { loadState, pushKey, saveState } from "./state.ts";
-import { buildNotificationSchedule, loadProjectFromDb } from "./load-project.ts";
+import { buildNotificationSchedule, loadProject } from "./load-project.ts";
 
 const ROOT = process.cwd();
 const STATE_PATH = resolve(ROOT, ".rollout-push-state.json");
@@ -28,10 +28,10 @@ function formatWhen(date: Date) {
 }
 
 async function runPreview(projectRef?: string) {
-  const project = loadProjectFromDb(projectRef || undefined);
+  const { project, source } = await loadProject(projectRef || undefined);
   const { tasks } = buildNotificationSchedule(project);
 
-  console.log(`Preview — ${project.name}`);
+  console.log(`Preview — ${project.name} (${source})`);
   console.log(`  Release date: ${project.releaseDate}`);
   console.log(`  Calendar: ${notificationConfig.calendarName}`);
   console.log(`  Timezone: ${notificationConfig.timezone}`);
@@ -138,11 +138,11 @@ async function main(): Promise<void> {
   const doSync = !onlyPush;
   const doPush = !onlySync;
 
-  const project = loadProjectFromDb(projectRef || undefined);
+  const { project, source } = await loadProject(projectRef || undefined);
   const { tasks } = buildNotificationSchedule(project);
 
   console.log(
-    `Rollout notifications — ${project.name} | ${tasks.length} task(s) | calendar "${notificationConfig.calendarName}" | ${notificationConfig.timezone}`
+    `Rollout notifications — ${project.name} (${source}) | ${tasks.length} task(s) | calendar "${notificationConfig.calendarName}" | ${notificationConfig.timezone}`
   );
 
   if (tasks.length === 0) {
