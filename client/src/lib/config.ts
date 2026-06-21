@@ -17,11 +17,25 @@ export function isSupabaseConfigured() {
   );
 }
 
+function rolloutBackendMode() {
+  return import.meta.env.VITE_ROLLOUT_BACKEND?.trim();
+}
+
+/** Cloud mode was requested at build time (e.g. Vercel uses build:vercel). */
+export function isCloudBackendRequested() {
+  return rolloutBackendMode() === "cloud";
+}
+
+/** Cloud deployment is missing Supabase keys baked into the client bundle. */
+export function isCloudBackendMisconfigured() {
+  return isCloudBackendRequested() && !isSupabaseConfigured();
+}
+
 /** Whether project data should come from Supabase (vs local SQLite / native store). */
 export function useCloudBackend() {
-  const mode = import.meta.env.VITE_ROLLOUT_BACKEND?.trim();
+  const mode = rolloutBackendMode();
   if (mode === "local") return false;
-  if (mode === "cloud") return true;
+  if (mode === "cloud") return isSupabaseConfigured();
 
   // Local desktop builds embed the API URL.
   if (import.meta.env.VITE_API_BASE?.trim()) return false;

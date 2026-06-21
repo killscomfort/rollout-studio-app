@@ -26,6 +26,7 @@ import {
   DEFAULT_TEMPLATE_SLUG,
   personalizeTemplateForNewProject,
 } from "../../../shared/template-personalize";
+import { isSupabaseConfigured } from "../lib/config";
 import { getSupabase, requireUserId } from "../lib/supabase";
 import { trackUserActivity } from "../lib/user-tracking";
 import { TEMPLATES } from "./templates";
@@ -726,6 +727,10 @@ export async function fetchAdminStats() {
 }
 
 export function onAuthStateChange(callback: (signedIn: boolean) => void) {
+  if (!isSupabaseConfigured()) {
+    return () => {};
+  }
+
   const supabase = getSupabase();
   const {
     data: { subscription },

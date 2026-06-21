@@ -13,3 +13,4 @@ ios/DerivedData/
 .env
 .env.local
 .rollout-push-state.json
+.vercel

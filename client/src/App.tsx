@@ -2,8 +2,10 @@ import { Capacitor } from "@capacitor/core";
 import { useEffect, useMemo, useState } from "react";
 import { initAppData, useCloudBackend, onAuthStateChange, subscribeToCloudChanges } from "./api";
 import { getSession } from "./lib/supabase";
+import { isCloudBackendMisconfigured } from "./lib/config";
 import { AppNavBar } from "./components/AppNavBar";
 import { AuthPage } from "./pages/AuthPage";
+import { CloudSetupPage } from "./pages/CloudSetupPage";
 import { AdminPage } from "./pages/AdminPage";
 import { ProjectListPage } from "./pages/ProjectListPage";
 import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
@@ -96,15 +98,29 @@ export default function App() {
       return;
     }
 
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        setSignedIn(false);
+      }
+    }, 8000);
+
     void getSession()
       .then((session) => {
-        setSignedIn(Boolean(session));
+        if (!cancelled) {
+          setSignedIn(Boolean(session));
+        }
       })
       .catch(() => {
-        setSignedIn(false);
+        if (!cancelled) {
+          setSignedIn(false);
+        }
+      })
+      .finally(() => {
+        window.clearTimeout(timeout);
       });
 
-    return onAuthStateChange((next) => {
+    const unsubscribe = onAuthStateChange((next) => {
       if (next) {
         void initAppData()
           .then(() => setSignedIn(true))
@@ -113,6 +129,12 @@ export default function App() {
       }
       setSignedIn(false);
     });
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -273,6 +295,10 @@ export default function App() {
       />
     );
   }, [projectId, view, workspaceKey, refreshKey, widgetMode, adminMode]);
+
+  if (isCloudBackendMisconfigured()) {
+    return <CloudSetupPage />;
+  }
 
   if (signedIn === null) {
     return (

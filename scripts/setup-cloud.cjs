@@ -102,13 +102,30 @@ async function checkSupabase() {
   console.log("Share VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY with app users (anon key is public-safe with RLS).");
 }
 
+function verifyBuildEnv() {
+  if (!cloud) {
+    console.error("");
+    console.error("Vercel build is missing Supabase environment variables.");
+    console.error("Set these in the Vercel project → Settings → Environment Variables, then redeploy:");
+    console.error("  VITE_SUPABASE_URL=https://<project-ref>.supabase.co");
+    console.error("  VITE_SUPABASE_ANON_KEY=<anon or publishable key from Supabase → Settings → API>");
+    console.error("");
+    console.error("Use the real anon/publishable key — not the placeholder from .env.example.");
+    process.exit(1);
+  }
+
+  console.log("Supabase env vars OK for Vercel build.");
+}
+
 const command = process.argv[2];
 
 if (command === "write") {
   writeBackendMode(path.join(root, "client/dist"));
+} else if (command === "verify-build") {
+  verifyBuildEnv();
 } else if (command === "check") {
   void checkSupabase();
 } else {
-  console.log(`Usage: node scripts/setup-cloud.cjs <check|write>`);
+  console.log(`Usage: node scripts/setup-cloud.cjs <check|verify-build|write>`);
   process.exitCode = 1;
 }

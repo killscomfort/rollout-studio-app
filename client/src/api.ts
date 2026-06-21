@@ -164,6 +164,6 @@ export async function initAppData() {
   }
 }
 
-export { isSupabaseConfigured, useCloudBackend } from "./lib/config";
+export { isSupabaseConfigured, isCloudBackendMisconfigured, useCloudBackend } from "./lib/config";
 export { onAuthStateChange } from "./data/supabase-store";
 export { subscribeToCloudChanges } from "./lib/cloud-sync";
