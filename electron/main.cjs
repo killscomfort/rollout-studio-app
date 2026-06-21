@@ -313,6 +313,12 @@ function reloadWindows() {
   }
 }
 
+function hideWidgetWindow() {
+  if (widgetWindow) {
+    widgetWindow.hide();
+  }
+}
+
 function createApplicationMenu() {
   if (process.platform !== "darwin") return;
 
@@ -326,6 +332,19 @@ function createApplicationMenu() {
           label: "Open Widget",
           accelerator: "CmdOrCtrl+Shift+W",
           click: () => createWidgetWindow(),
+        },
+        {
+          label: "Close Widget",
+          accelerator: "CmdOrCtrl+W",
+          click: () => {
+            if (widgetWindow?.isVisible()) {
+              hideWidgetWindow();
+              return;
+            }
+            if (mainWindow) {
+              mainWindow.close();
+            }
+          },
         },
         {
           label: "Reload App",
@@ -406,6 +425,10 @@ function createTray() {
       click: () => createWidgetWindow(),
     },
     {
+      label: "Hide Widget",
+      click: () => hideWidgetWindow(),
+    },
+    {
       label: "Open Full App",
       click: () => showMainWindow(),
     },
@@ -441,9 +464,7 @@ function registerIpc() {
   });
 
   ipcMain.handle("close-widget", () => {
-    if (widgetWindow) {
-      widgetWindow.hide();
-    }
+    hideWidgetWindow();
   });
 
   ipcMain.handle("toggle-always-on-top", () => {

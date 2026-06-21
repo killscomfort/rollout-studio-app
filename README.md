@@ -4,7 +4,23 @@ Standalone rollout checklist app for music releases — Mac desktop, iPhone, and
 
 Rollout Studio is its own product. Customize projects, templates, and branding for any artist or release.
 
-## Desktop (macOS)
+## Download (macOS)
+
+Official builds are published on **[GitHub Releases](https://github.com/killscomfort/rollout-studio-app/releases)** as `.zip` and `.dmg`.
+
+1. Download the latest **Rollout-Studio-mac** artifact for your chip (Apple Silicon `arm64` or Intel `x64`)
+2. Unzip and drag **Rollout Studio.app** to Applications
+3. First launch: right-click → **Open** (unsigned build — macOS Gatekeeper)
+4. Copy `.env.example` → `.env` and add your Supabase keys for cloud sync (see below)
+
+Refresh your Desktop Dock icon after each update:
+
+```bash
+cd rollout-studio-app
+npm run apply:desktop
+```
+
+## Desktop (macOS) — from source
 
 ```bash
 git clone https://github.com/killscomfort/rollout-studio-app.git
@@ -99,6 +115,8 @@ Without Supabase:
 
 | Command | Description |
 |---------|-------------|
+| `npm run apply:desktop` | Rebuild and install Desktop launcher + Dock app |
+| `npm run release:mac` | Build `.zip` + `.dmg` in `release/` |
 | `npm run setup:cloud` | Verify Supabase env and connection |
 | `npm run dev` | Auto cloud or local dev mode |
 | `npm run dev:cloud` | Dev mode with Supabase only |

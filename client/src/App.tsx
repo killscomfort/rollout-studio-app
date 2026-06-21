@@ -10,6 +10,8 @@ import { ProjectSettingsPage } from "./pages/ProjectSettingsPage";
 import { ProjectWorkspace } from "./pages/ProjectWorkspace";
 import { WidgetPanel } from "./pages/WidgetPanel";
 import { SkyBackground } from "./components/SkyBackground";
+import { useAppKeyboardShortcuts } from "./hooks/useAppKeyboardShortcuts";
+import { useWidgetCloseShortcut } from "./hooks/useWidgetCloseShortcut";
 
 type View = "list" | "workspace" | "settings";
 
@@ -41,6 +43,7 @@ function navSubtitle(view: View, projectTitle: string) {
 
 export default function App() {
   const widgetMode = isWidgetMode();
+  useWidgetCloseShortcut(widgetMode && !Capacitor.isNativePlatform());
   const [signedIn, setSignedIn] = useState<boolean | null>(
     useCloudBackend() ? null : true
   );
@@ -190,6 +193,26 @@ export default function App() {
     };
   }, [widgetMode]);
 
+  useAppKeyboardShortcuts({
+    onBack: widgetMode ? undefined : goBack,
+    onForward: widgetMode ? undefined : goForward,
+    onAllProjects: widgetMode
+      ? undefined
+      : () => {
+          setProjectTitle("");
+          setNavState({
+            history: [{ view: "list", projectId: null }],
+            index: 0,
+          });
+        },
+    onOpenWidget: widgetMode
+      ? undefined
+      : () => void window.rolloutStudio?.openWidget?.(),
+    onReload: widgetMode
+      ? undefined
+      : () => void window.rolloutStudio?.reloadApp?.(),
+  });
+
   const content = useMemo(() => {
     if (widgetMode) {
       return <WidgetPanel key={refreshKey} />;
@@ -276,7 +299,7 @@ export default function App() {
                   <button
                     type="button"
                     className="widget-icon-button widget-close-button"
-                    title="Close widget"
+                    title="Close widget (Esc or ⌘W)"
                     aria-label="Close widget"
                     onClick={() => void window.rolloutStudio?.closeWidget?.()}
                   >

@@ -14,6 +14,10 @@ export function AppFooter() {
       </a>
       <span className="app-footer-sep">·</span>
       <a href="mailto:killscomfort@gmail.com">Contact</a>
+      <span className="app-footer-sep">·</span>
+      <span className="app-footer-hint">
+        ⌘⇧W widget · Esc / ⌘W close · ⌘[ ⌘] navigate
+      </span>
     </footer>
   );
 }

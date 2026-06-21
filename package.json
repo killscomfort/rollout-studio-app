@@ -26,6 +26,7 @@
     "start:local": "node scripts/run-build.cjs && electron .",
     "start:cloud": "node scripts/run-build.cjs && electron .",
     "pack:mac": "node scripts/run-build.cjs && electron-builder --mac dir",
+    "release:mac": "node scripts/run-build.cjs && electron-builder --mac zip dmg --publish never",
     "apply:desktop": "node scripts/install-desktop.cjs",
     "build:mobile": "VITE_API_BASE= vite build --config client/vite.config.ts",
     "build:ios": "npm run build:mobile && npx cap sync ios",
@@ -60,6 +61,19 @@
       "identity": null,
       "hardenedRuntime": false,
       "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
         {
           "target": "dir",
           "arch": [

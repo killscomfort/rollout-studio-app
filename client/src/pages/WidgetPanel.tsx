@@ -8,6 +8,7 @@ import {
   TASK_CELEBRATION_MS,
 } from "../lib/celebrate-task";
 import { SkyBackground } from "../components/SkyBackground";
+import { useWidgetCloseShortcut } from "../hooks/useWidgetCloseShortcut";
 
 import { ACTIVE_PROJECT_KEY } from "../lib/active-project";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
@@ -30,6 +31,7 @@ function flattenTasks(project: ProjectDetail) {
 
 export function WidgetPanel() {
   const isNative = Capacitor.isNativePlatform();
+  useWidgetCloseShortcut(!isNative);
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pinned, setPinned] = useState(true);
@@ -175,7 +177,7 @@ export function WidgetPanel() {
                 <button
                   type="button"
                   className="widget-icon-button widget-close-button"
-                  title="Close widget"
+                  title="Close widget (Esc or ⌘W)"
                   aria-label="Close widget"
                   onClick={() => void window.rolloutStudio?.closeWidget?.()}
                 >
